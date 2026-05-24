@@ -1,0 +1,19 @@
+/* src/assets/main.css */
+
+/* 1. 让 body 铺满 */
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #f5f7fa; /* 灰色背景 */
+  width: 100vw;
+  overflow-x: hidden; /* 防止横向滚动条 */
+}
+
+/* 2. 让 Vue 的根节点铺满 */
+#app {
+  width: 100%;
+  max-width: 100%; /* 关键！取消任何最大宽度限制 */
+  margin: 0;
+  padding: 0;
+  text-align: left; /* 恢复默认对齐 */
+}
