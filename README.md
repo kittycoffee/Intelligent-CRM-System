@@ -58,7 +58,7 @@
 │   ├── entity/              # 数据库实体类 (OrderInfo, ProductInfo 等)
 │   └── utils/               # 系统通用工具类 (Result 封装等)
 ├── src/main/resources/
-│   └── application.properties # 数据库连接配置
+│   └── application.properties # 数据库连接与 AI 配置占位
 ```
 
 ---
@@ -82,12 +82,15 @@
    ```
 
 ### 3. 配置 DeepSeek API
-本项目依赖 DeepSeek 官方 API 作为大模型底座，请在 `application.properties` 中填入：
+本项目依赖 DeepSeek 官方 API 作为大模型底座。请不要将真实 API Key 写入 `application.properties` 或提交到 GitHub，而是在项目根目录创建本地 `.env` 文件：
+
 ```properties
-ai.api.url=https://api.deepseek.com/chat/completions
-ai.api.key=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx # 请替换为您申请的 API Key
-ai.model=deepseek-chat
+DEEPSEEK_API_KEY=your_deepseek_api_key_here
+DEEPSEEK_API_URL=https://api.deepseek.com/chat/completions
+DEEPSEEK_MODEL=deepseek-chat
 ```
+
+项目已提供 `.env.example` 作为配置模板，`.env` 已加入 `.gitignore`，仅用于本地运行。
 
 ### 4. 启动项目
 **后端启动：**
