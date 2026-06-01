@@ -10,6 +10,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import jakarta.annotation.PostConstruct;
 
 @Slf4j
 @Service
@@ -40,10 +42,19 @@ public class AiMarketingService {
     @Value("${ai.api.url}") private String apiUrl;
     @Value("${ai.api.key}") private String apiKey;
     @Value("${ai.model}") private String model;
+    @Value("${ai.api.timeout-ms:30000}") private int apiTimeoutMs;
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    private RestTemplate restTemplate;
     private String dailyInsightCache = null;
     private LocalDate cacheDate = null; // 记录缓存是哪天的
+
+    @PostConstruct
+    void initRestTemplate() {
+        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(apiTimeoutMs);
+        factory.setReadTimeout(apiTimeoutMs);
+        this.restTemplate = new RestTemplate(factory);
+    }
 
 
     /**

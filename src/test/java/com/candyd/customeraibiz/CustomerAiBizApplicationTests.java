@@ -2,10 +2,9 @@ package com.candyd.customeraibiz;
 
 import com.candyd.customeraibiz.service.RfmAnalysisService;
 import org.junit.jupiter.api.Test;
-import org.mybatis.spring.annotation.MapperScan;
+import org.junit.jupiter.api.Disabled;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.Rollback;
 
 @SpringBootTest
 class CustomerAiBizApplicationTests {
@@ -18,6 +17,7 @@ class CustomerAiBizApplicationTests {
     private RfmAnalysisService rfmAnalysisService;
 
     @Test
+    @Disabled("Manual integration test: writes RFM snapshots to the local database")
     void testAnalysis() {
         rfmAnalysisService.executeFullAnalysis(); // 运行你刚才写的逻辑
     }
@@ -28,7 +28,7 @@ class CustomerAiBizApplicationTests {
     private com.candyd.customeraibiz.service.AiMarketingService aiMarketingService;
 
     @Test
-    @Rollback(false) // 强制要求：不许回滚，把数据真的留下来！
+    @Disabled("Manual integration test: invokes the LLM and writes advice history")
     void testAiGeneration() {
         System.out.println("=== AI 营销大脑启动 ===");
         aiMarketingService.generateAiAdvice(null);
