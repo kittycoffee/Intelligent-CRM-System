@@ -17,6 +17,7 @@ const handleForm = ref({ result: '' })
 // ⭐ 将 AI 的分析和话术分开存储
 const aiAnalysisText = ref("") // 给管理员看的分析
 const aiReplyDraft = ref("")   // 给客户发的话术
+const agentResult = ref(null)  // Agent 工作流结构化结果
 
 onMounted(() => { fetchData() })
 
@@ -40,9 +41,13 @@ async function generateAiReply() {
   analyzing.value = true
   try {
     const res = await axios.get(`/api/interaction/analyze/${currentItem.value.id}`)
+    if (res.data && res.data.code === 404) {
+      alert(res.data.msg || "记录不存在")
+      return
+    }
     if (res.data) {
-      parseAiContent(res.data)
-      currentItem.value.aiSuggestedReply = res.data
+      parseAgentResult(res.data)
+      currentItem.value.aiSuggestedReply = aiReplyDraft.value
     }
   } catch (e) {
     alert("AI 服务繁忙，请重试")
@@ -59,9 +64,8 @@ async function regenerateReply() {
   try {
     const res = await axios.post(`/api/interaction/regenerate-reply/${currentItem.value.id}`);
     if (res.data.code === 200) {
-      // 重新解析新的话术并更新
-      parseAiContent(res.data.data);
-      currentItem.value.aiSuggestedReply = res.data.data;
+      parseAgentResult(res.data.data);
+      currentItem.value.aiSuggestedReply = aiReplyDraft.value;
     } else {
       alert(res.data.msg || "生成失败");
     }
@@ -80,6 +84,7 @@ function openHandleModal(item) {
 
   aiAnalysisText.value = ""
   aiReplyDraft.value = ""
+  agentResult.value = null
 
   if (item.aiSuggestedReply) {
     parseAiContent(item.aiSuggestedReply)
@@ -99,6 +104,33 @@ function parseAiContent(text) {
   }
 }
 
+function parseAgentResult(result) {
+  if (!result || typeof result === 'string') {
+    parseAiContent(result || '')
+    return
+  }
+
+  agentResult.value = result
+  aiReplyDraft.value = result.reply_draft || result.replyDraft || ''
+  const profile = result.customer_profile || {}
+  const level = profile.level || profile.customerLevel || '未知等级'
+  aiAnalysisText.value = `识别意图：${result.intent || 'unknown'}；客户等级：${level}；置信度：${formatConfidence(result.confidence)}`
+
+  if (!aiReplyDraft.value && result.data) {
+    parseAgentResult(result.data)
+  }
+}
+
+function formatConfidence(value) {
+  if (value === undefined || value === null || value === '') return 'N/A'
+  return `${Math.round(Number(value) * 100)}%`
+}
+
+function evidenceLabel(item) {
+  const sourceMap = { product: '商品', policy: '政策', faq: 'FAQ' }
+  return sourceMap[item.source] || item.source || '证据'
+}
+
 function viewHistoryDetail(item) {
   currentItem.value = item
   isReadOnly.value = true
@@ -106,6 +138,7 @@ function viewHistoryDetail(item) {
 
   aiAnalysisText.value = ""
   aiReplyDraft.value = ""
+  agentResult.value = null
 
   showModal.value = true
 }
@@ -249,6 +282,36 @@ function formatTime(t) { return t ? t.replace('T', ' ') : '' }
             <div class="ai-analysis">
               <strong>【深度分析】</strong> {{ aiAnalysisText }}
             </div>
+            <div v-if="agentResult" class="agent-panel">
+              <div class="agent-metrics">
+                <span>意图：{{ agentResult.intent }}</span>
+                <span>置信度：{{ formatConfidence(agentResult.confidence) }}</span>
+                <span v-if="agentResult.fallback" class="warning-chip">已降级</span>
+              </div>
+
+              <div v-if="agentResult.trace?.length" class="agent-section">
+                <strong>Agent 执行轨迹</strong>
+                <div class="trace-list">
+                  <span v-for="step in agentResult.trace" :key="step.node" class="trace-item">
+                    {{ step.node }}
+                  </span>
+                </div>
+              </div>
+
+              <div v-if="agentResult.retrieved_evidence?.length" class="agent-section">
+                <strong>检索证据</strong>
+                <div v-for="item in agentResult.retrieved_evidence" :key="item.id" class="evidence-item">
+                  <span class="evidence-tag">{{ evidenceLabel(item) }}</span>
+                  <span>{{ item.title }}</span>
+                  <small>score {{ item.score }}</small>
+                </div>
+              </div>
+
+              <div v-if="agentResult.risk_warnings?.length" class="agent-section risk-section">
+                <strong>风险提示</strong>
+                <div v-for="warning in agentResult.risk_warnings" :key="warning">- {{ warning }}</div>
+              </div>
+            </div>
             <div class="ai-reply">
               <strong>【推荐话术】</strong> {{ aiReplyDraft }}
             </div>
@@ -310,7 +373,7 @@ function formatTime(t) { return t ? t.replace('T', ' ') : '' }
 
 /* 弹窗样式 */
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 2000; animation: fadeIn 0.2s; }
-.modal-content { background: white; padding: 25px; border-radius: 8px; width: 600px; max-width: 90%; position: relative; animation: slideUp 0.2s; }
+.modal-content { background: white; padding: 25px; border-radius: 8px; width: 760px; max-width: 90%; max-height: 90vh; overflow-y: auto; position: relative; animation: slideUp 0.2s; }
 @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
 .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
@@ -325,6 +388,17 @@ function formatTime(t) { return t ? t.replace('T', ' ') : '' }
 .ai-title { color: #409eff; font-weight: bold; font-size: 13px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
 .ai-analysis { font-size: 13px; color: #666; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px dashed #c6e2ff; }
 .ai-reply { font-size: 14px; color: #333; margin-bottom: 10px; line-height: 1.5; background: #fff; padding: 8px; border-radius: 4px; border: 1px solid #dcdfe6; }
+.agent-panel { background: #fff; border: 1px solid #dcdfe6; border-radius: 6px; padding: 10px; margin: 10px 0; font-size: 12px; color: #555; }
+.agent-metrics { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+.agent-metrics span { background: #f4f4f5; padding: 3px 7px; border-radius: 4px; }
+.agent-metrics .warning-chip { background: #fdf6ec; color: #e6a23c; }
+.agent-section { border-top: 1px dashed #ddd; padding-top: 8px; margin-top: 8px; }
+.trace-list { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
+.trace-item { background: #ecf5ff; color: #409eff; padding: 3px 6px; border-radius: 4px; }
+.evidence-item { display: flex; align-items: center; gap: 6px; margin-top: 6px; }
+.evidence-item small { color: #999; }
+.evidence-tag { background: #f0f9eb; color: #67c23a; padding: 2px 5px; border-radius: 3px; }
+.risk-section { color: #e6a23c; line-height: 1.6; }
 
 .ai-empty-state { text-align: center; padding: 15px; color: #666; }
 

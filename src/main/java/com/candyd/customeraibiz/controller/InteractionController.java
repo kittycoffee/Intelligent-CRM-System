@@ -5,6 +5,7 @@ import com.candyd.customeraibiz.entity.CustInteraction;
 import com.candyd.customeraibiz.entity.CustomerInfo;
 import com.candyd.customeraibiz.mapper.CustInteractionMapper;
 import com.candyd.customeraibiz.mapper.CustomerInfoMapper;
+import com.candyd.customeraibiz.service.AiAgentWorkflowService;
 import com.candyd.customeraibiz.service.AiMarketingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -23,6 +24,7 @@ public class InteractionController {
     @Autowired private CustInteractionMapper interactionMapper;
     @Autowired private CustomerInfoMapper customerMapper;
     @Autowired private AiMarketingService aiService;
+    @Autowired private AiAgentWorkflowService agentWorkflowService;
 
     // 1. 获取待办列表 (保持不变)
     @GetMapping("/pending")
@@ -76,15 +78,16 @@ public class InteractionController {
     // 3. ✅ 新增接口：手动触发工单的 AI 回复生成
     // 用于工单处理界面，点击“生成建议”时调用
     @GetMapping("/analyze/{id}")
-    public String analyzeInteraction(@PathVariable Long id) {
+    public Map<String, Object> analyzeInteraction(@PathVariable Long id) {
         CustInteraction interaction = interactionMapper.selectById(id);
-        if (interaction == null) return "记录不存在";
+        if (interaction == null) {
+            Map<String, Object> result = new HashMap<>();
+            result.put("code", 404);
+            result.put("msg", "记录不存在");
+            return result;
+        }
 
-        // 调用 AI 生成 (这是一个耗时操作)
-        aiService.generateReplyDraft(interaction);
-
-        // 重新查出来返回给前端
-        return interactionMapper.selectById(id).getAiSuggestedReply();
+        return agentWorkflowService.generateWorkOrderResult(interaction);
     }
 
     // 4. 处理完成接口 (保持不变)
@@ -137,15 +140,11 @@ public class InteractionController {
                 return result;
             }
 
-            // 2. 使用注入的小写实例对象 aiService 调用方法 (修复点 2)
-            aiService.generateReplyDraft(interaction);
-
-            // 3. 再次从数据库查出最新的记录返回 (修复点 1)
-            CustInteraction updatedInteraction = interactionMapper.selectById(id);
+            Map<String, Object> agentResult = agentWorkflowService.generateWorkOrderResult(interaction);
 
             result.put("code", 200);
             result.put("msg", "话术已更新");
-            result.put("data", updatedInteraction.getAiSuggestedReply());
+            result.put("data", agentResult);
             return result;
 
         } catch (Exception e) {
