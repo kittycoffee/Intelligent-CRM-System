@@ -33,6 +33,7 @@ build/
 !**/src/test/**/build/
 __pycache__/
 *.py[cod]
+*.log
 
 ### VS Code ###
 .vscode/
