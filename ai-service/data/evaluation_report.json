@@ -1,0 +1,238 @@
+{
+  "total": 20,
+  "passed": 20,
+  "pass_rate": 1.0,
+  "results": [
+    {
+      "id": "product_headphones_01",
+      "passed": true,
+      "checks": {
+        "intent": true,
+        "structured_output": true,
+        "risk_guard": true,
+        "product_evidence": true
+      },
+      "intent": "product_consulting",
+      "confidence": 0.91
+    },
+    {
+      "id": "product_headphones_02",
+      "passed": true,
+      "checks": {
+        "intent": true,
+        "structured_output": true,
+        "risk_guard": true,
+        "product_evidence": true
+      },
+      "intent": "product_consulting",
+      "confidence": 0.92
+    },
+    {
+      "id": "product_clothing_01",
+      "passed": true,
+      "checks": {
+        "intent": true,
+        "structured_output": true,
+        "risk_guard": true,
+        "product_evidence": true
+      },
+      "intent": "product_consulting",
+      "confidence": 0.93
+    },
+    {
+      "id": "product_no_match_01",
+      "passed": true,
+      "checks": {
+        "intent": true,
+        "structured_output": true,
+        "risk_guard": true
+      },
+      "intent": "product_consulting",
+      "confidence": 0.72
+    },
+    {
+      "id": "product_no_match_02",
+      "passed": true,
+      "checks": {
+        "intent": true,
+        "structured_output": true,
+        "risk_guard": true
+      },
+      "intent": "product_consulting",
+      "confidence": 0.7
+    },
+    {
+      "id": "complaint_shipping_01",
+      "passed": true,
+      "checks": {
+        "intent": true,
+        "structured_output": true,
+        "risk_guard": true,
+        "policy_evidence": true
+      },
+      "intent": "complaint",
+      "confidence": 0.89
+    },
+    {
+      "id": "complaint_shipping_02",
+      "passed": true,
+      "checks": {
+        "intent": true,
+        "structured_output": true,
+        "risk_guard": true,
+        "policy_evidence": true
+      },
+      "intent": "complaint",
+      "confidence": 0.89
+    },
+    {
+      "id": "complaint_quality_01",
+      "passed": true,
+      "checks": {
+        "intent": true,
+        "structured_output": true,
+        "risk_guard": true,
+        "policy_evidence": true
+      },
+      "intent": "complaint",
+      "confidence": 0.89
+    },
+    {
+      "id": "complaint_service_01",
+      "passed": true,
+      "checks": {
+        "intent": true,
+        "structured_output": true,
+        "risk_guard": true,
+        "policy_evidence": true
+      },
+      "intent": "complaint",
+      "confidence": 0.89
+    },
+    {
+      "id": "after_sales_return_01",
+      "passed": true,
+      "checks": {
+        "intent": true,
+        "structured_output": true,
+        "risk_guard": true,
+        "policy_evidence": true
+      },
+      "intent": "after_sales",
+      "confidence": 0.91
+    },
+    {
+      "id": "after_sales_return_02",
+      "passed": true,
+      "checks": {
+        "intent": true,
+        "structured_output": true,
+        "risk_guard": true,
+        "policy_evidence": true
+      },
+      "intent": "after_sales",
+      "confidence": 0.88
+    },
+    {
+      "id": "after_sales_invoice_01",
+      "passed": true,
+      "checks": {
+        "intent": true,
+        "structured_output": true,
+        "risk_guard": true,
+        "policy_evidence": true
+      },
+      "intent": "after_sales",
+      "confidence": 0.89
+    },
+    {
+      "id": "after_sales_quality_01",
+      "passed": true,
+      "checks": {
+        "intent": true,
+        "structured_output": true,
+        "risk_guard": true,
+        "policy_evidence": true
+      },
+      "intent": "after_sales",
+      "confidence": 0.89
+    },
+    {
+      "id": "marketing_coupon_01",
+      "passed": true,
+      "checks": {
+        "intent": true,
+        "structured_output": true,
+        "risk_guard": true
+      },
+      "intent": "marketing",
+      "confidence": 0.7
+    },
+    {
+      "id": "marketing_discount_01",
+      "passed": true,
+      "checks": {
+        "intent": true,
+        "structured_output": true,
+        "risk_guard": true
+      },
+      "intent": "marketing",
+      "confidence": 0.88
+    },
+    {
+      "id": "marketing_event_01",
+      "passed": true,
+      "checks": {
+        "intent": true,
+        "structured_output": true,
+        "risk_guard": true
+      },
+      "intent": "marketing",
+      "confidence": 0.7
+    },
+    {
+      "id": "general_address_01",
+      "passed": true,
+      "checks": {
+        "intent": true,
+        "structured_output": true,
+        "risk_guard": true
+      },
+      "intent": "general_service",
+      "confidence": 0.46
+    },
+    {
+      "id": "general_contact_01",
+      "passed": true,
+      "checks": {
+        "intent": true,
+        "structured_output": true,
+        "risk_guard": true
+      },
+      "intent": "general_service",
+      "confidence": 0.64
+    },
+    {
+      "id": "general_order_01",
+      "passed": true,
+      "checks": {
+        "intent": true,
+        "structured_output": true,
+        "risk_guard": true
+      },
+      "intent": "general_service",
+      "confidence": 0.64
+    },
+    {
+      "id": "general_greeting_01",
+      "passed": true,
+      "checks": {
+        "intent": true,
+        "structured_output": true,
+        "risk_guard": true
+      },
+      "intent": "general_service",
+      "confidence": 0.63
+    }
+  ]
+}

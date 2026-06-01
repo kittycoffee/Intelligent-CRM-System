@@ -1,27 +1,22 @@
 [
-  {
-    "id": "case_product_recommend",
-    "content": "我想买一款适合通勤的耳机，有没有推荐？",
-    "expected_intent": "product_consulting",
-    "must_have": ["recommend", "evidence"]
-  },
-  {
-    "id": "case_complaint",
-    "content": "我上次买的东西到现在还没发货，体验太差了",
-    "expected_intent": "complaint",
-    "must_have": ["apology", "next_step"]
-  },
-  {
-    "id": "case_after_sales",
-    "content": "这个商品可以退货吗？包装还在",
-    "expected_intent": "after_sales",
-    "must_have": ["policy", "confirm_info"]
-  },
-  {
-    "id": "case_no_match",
-    "content": "有没有潜水用的专业设备？",
-    "expected_intent": "product_consulting",
-    "must_have": ["no_fabrication"]
-  }
+  {"id": "product_headphones_01", "content": "我每天坐地铁，想买一款通勤耳机，有没有推荐？", "expected_intent": "product_consulting", "expect_product": true},
+  {"id": "product_headphones_02", "content": "有没有轻便一点的降噪耳机？", "expected_intent": "product_consulting", "expect_product": true},
+  {"id": "product_clothing_01", "content": "冬天上班穿的轻薄羽绒服有推荐吗？", "expected_intent": "product_consulting", "expect_product": true},
+  {"id": "product_no_match_01", "content": "有没有潜水用的专业设备？", "expected_intent": "product_consulting", "no_products": true, "expect_no_fabrication": true},
+  {"id": "product_no_match_02", "content": "想买一套专业摄影棚灯光设备", "expected_intent": "product_consulting", "no_products": true, "expect_no_fabrication": true},
+  {"id": "complaint_shipping_01", "content": "我上次买的东西到现在还没发货，体验太差了", "interaction_type": "投诉", "expected_intent": "complaint", "expect_policy": true},
+  {"id": "complaint_shipping_02", "content": "物流太慢了，我已经等了好多天", "interaction_type": "投诉", "expected_intent": "complaint", "expect_policy": true},
+  {"id": "complaint_quality_01", "content": "商品收到就是坏的，我很不满意", "interaction_type": "投诉", "expected_intent": "complaint", "expect_policy": true},
+  {"id": "complaint_service_01", "content": "客服一直没回复，服务太差了", "interaction_type": "投诉", "expected_intent": "complaint", "expect_policy": true},
+  {"id": "after_sales_return_01", "content": "这个商品可以退货吗？包装还在", "expected_intent": "after_sales", "expect_policy": true},
+  {"id": "after_sales_return_02", "content": "我想申请换货，需要准备什么？", "expected_intent": "after_sales", "expect_policy": true},
+  {"id": "after_sales_invoice_01", "content": "发票开错了，售后可以帮忙处理吗？", "expected_intent": "after_sales", "expect_policy": true},
+  {"id": "after_sales_quality_01", "content": "商品质量有问题，怎么申请售后？", "expected_intent": "after_sales", "expect_policy": true},
+  {"id": "marketing_coupon_01", "content": "最近有没有可以领的优惠券？", "expected_intent": "marketing"},
+  {"id": "marketing_discount_01", "content": "会员现在有折扣活动吗？", "expected_intent": "marketing"},
+  {"id": "marketing_event_01", "content": "大促期间有什么优惠活动？", "expected_intent": "marketing"},
+  {"id": "general_address_01", "content": "我想修改一下收货地址", "expected_intent": "general_service"},
+  {"id": "general_contact_01", "content": "人工客服什么时候在线？", "expected_intent": "general_service"},
+  {"id": "general_order_01", "content": "帮我看一下订单状态", "expected_intent": "general_service"},
+  {"id": "general_greeting_01", "content": "你好，我有一个问题想咨询", "expected_intent": "general_service"}
 ]
-

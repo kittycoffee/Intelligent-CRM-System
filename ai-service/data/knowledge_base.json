@@ -3,31 +3,30 @@
     "id": "policy_return_7d",
     "type": "policy",
     "title": "7 day return policy",
-    "text": "Non-customized products can be returned within 7 days if unused and packaging is complete. Customer service should first confirm order number, product status, and reason."
+    "text": "非定制商品在未使用且包装完整时支持 7 天内退货。客服应先确认订单号、商品状态、包装情况和退货原因。"
   },
   {
     "id": "policy_vip",
     "type": "policy",
     "title": "VIP customer service policy",
-    "text": "High value customers should receive priority handling, warmer tone, and optional manual follow-up. Do not promise discounts without a real promotion or manager approval."
+    "text": "高价值客户应优先处理，采用更主动的沟通语气，并安排人工跟进。没有真实活动或主管授权时，不得承诺折扣、赔偿或赠品。"
   },
   {
     "id": "faq_stock",
     "type": "faq",
     "title": "Stock and product recommendation",
-    "text": "When recommending products, only use currently available products from the CRM product list. If no product matches, say that no reliable match was found and offer to collect more requirements."
+    "text": "推荐商品时，只能使用 CRM 商品列表中当前在售且有库存的商品。如果没有匹配商品，应明确说明暂未找到可靠结果，并继续收集预算和使用场景。"
   },
   {
     "id": "faq_complaint",
     "type": "faq",
     "title": "Complaint handling",
-    "text": "For complaints, first acknowledge the customer's feeling, then ask for key information, provide a concrete next step, and avoid blaming the customer."
+    "text": "处理投诉时，应先安抚客户情绪，再核实订单号、问题现象和处理记录，给出下一步动作，避免责怪客户。"
   },
   {
     "id": "policy_shipping_delay",
     "type": "policy",
     "title": "Shipping delay handling",
-    "text": "If the issue is delayed shipping, customer service should check logistics status, give an estimated update window, and offer follow-up notification."
+    "text": "遇到物流延迟或未发货问题时，客服应核查物流状态，说明预计更新时间，并主动提供后续通知。"
   }
 ]
-

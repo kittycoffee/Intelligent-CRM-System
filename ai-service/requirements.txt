@@ -2,4 +2,5 @@ fastapi==0.115.6
 uvicorn==0.34.0
 httpx==0.28.1
 pydantic==2.10.4
-
+qdrant-client[fastembed]>=1.14.2
+langgraph>=1.0

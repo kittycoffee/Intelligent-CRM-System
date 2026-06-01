@@ -8,7 +8,9 @@ import urllib.error
 import urllib.request
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Any, TypedDict
+
+from qdrant_retriever import semantic_scores
 
 
 ROOT = Path(__file__).resolve().parent
@@ -34,6 +36,8 @@ class AgentResult:
     reply_draft: str
     confidence: float
     trace: list[dict[str, Any]]
+    orchestration_backend: str
+    retrieval_backend: str
 
 
 def _normalize(text: str) -> str:
@@ -42,7 +46,10 @@ def _normalize(text: str) -> str:
 
 def _tokens(text: str) -> set[str]:
     text = _normalize(text)
-    zh_tokens = set(re.findall(r"[\u4e00-\u9fff]{2,}", text))
+    zh_tokens: set[str] = set()
+    for segment in re.findall(r"[\u4e00-\u9fff]+", text):
+        zh_tokens.add(segment)
+        zh_tokens.update(segment[i : i + 2] for i in range(len(segment) - 1))
     en_tokens = set(re.findall(r"[a-zA-Z0-9]+", text))
     return zh_tokens | en_tokens
 
@@ -66,8 +73,8 @@ def classify_intent(content: str, interaction_type: str | None = None) -> tuple[
     rules = [
         ("complaint", ["投诉", "不满", "差", "生气", "没发货", "太慢", "坏", "退款"]),
         ("after_sales", ["退货", "换货", "售后", "保修", "质量", "包装", "发票"]),
-        ("product_consulting", ["推荐", "买", "有没有", "适合", "商品", "价格", "库存"]),
         ("marketing", ["优惠", "活动", "折扣", "券", "双十一", "促销"]),
+        ("product_consulting", ["推荐", "买", "有没有", "适合", "商品", "价格", "库存"]),
     ]
     for intent, keywords in rules:
         if any(k in text for k in keywords):
@@ -123,17 +130,19 @@ def build_documents(payload: dict[str, Any]) -> list[dict[str, Any]]:
     return docs
 
 
-def retrieve_evidence(payload: dict[str, Any], intent: str, top_k: int = 5) -> list[Evidence]:
+def retrieve_evidence(payload: dict[str, Any], intent: str, top_k: int = 5) -> tuple[list[Evidence], str]:
     query = f"{intent} {payload.get('content') or ''}"
     docs = build_documents(payload)
+    dense_scores, backend = semantic_scores(query, docs)
     scored: list[Evidence] = []
     for doc in docs:
-        s = _score(query, f"{doc['title']} {doc['text']}")
-        if intent == "product_consulting" and doc["source"] == "product":
+        lexical_score = _score(query, f"{doc['title']} {doc['text']}")
+        s = max(lexical_score, dense_scores.get(doc["id"], 0.0))
+        if intent == "product_consulting" and doc["source"] == "product" and lexical_score > 0:
             s += 0.08
         if intent in {"complaint", "after_sales"} and doc["source"] in {"policy", "faq"}:
             s += 0.08
-        if s > 0:
+        if s >= 0.04:
             scored.append(
                 Evidence(
                     id=doc["id"],
@@ -145,7 +154,7 @@ def retrieve_evidence(payload: dict[str, Any], intent: str, top_k: int = 5) -> l
                 )
             )
     scored.sort(key=lambda e: e.score, reverse=True)
-    return scored[:top_k]
+    return scored[:top_k], backend
 
 
 def plan_reply(intent: str, profile: dict[str, Any], evidence: list[Evidence]) -> list[str]:
@@ -250,27 +259,121 @@ def compose_reply(
     return _call_deepseek(prompt) or _template_reply(intent, profile, evidence, warnings)
 
 
-def run_agent_workflow(payload: dict[str, Any]) -> AgentResult:
-    trace: list[dict[str, Any]] = []
+class WorkflowState(TypedDict, total=False):
+    payload: dict[str, Any]
+    intent: str
+    intent_confidence: float
+    profile: dict[str, Any]
+    evidence: list[Evidence]
+    plan: list[str]
+    warnings: list[str]
+    draft: str
+    retrieval_backend: str
+    trace: list[dict[str, Any]]
 
+
+def _with_trace(state: WorkflowState, node: str, detail: Any) -> list[dict[str, Any]]:
+    return [*(state.get("trace") or []), {"node": node, "status": "success", "detail": detail}]
+
+
+def _intent_node(state: WorkflowState) -> WorkflowState:
+    payload = state["payload"]
     intent, intent_confidence = classify_intent(payload.get("content") or "", payload.get("interactionType"))
-    trace.append({"node": "Intent Classifier", "status": "success", "detail": f"intent={intent}"})
+    return {
+        "intent": intent,
+        "intent_confidence": intent_confidence,
+        "trace": _with_trace(state, "Intent Classifier", f"intent={intent}"),
+    }
 
+
+def _profile_node(state: WorkflowState) -> WorkflowState:
+    payload = state["payload"]
     profile = build_customer_profile(payload)
-    trace.append({"node": "Customer Profiler", "status": "success", "detail": profile})
+    return {"profile": profile, "trace": _with_trace(state, "Customer Profiler", profile)}
 
-    evidence = retrieve_evidence(payload, intent)
-    trace.append({"node": "Knowledge Retriever", "status": "success", "detail": f"{len(evidence)} evidence items"})
 
+def _retrieval_node(state: WorkflowState) -> WorkflowState:
+    payload = state["payload"]
+    intent = state["intent"]
+    evidence, retrieval_backend = retrieve_evidence(payload, intent)
+    return {
+        "evidence": evidence,
+        "retrieval_backend": retrieval_backend,
+        "trace": _with_trace(state, "Knowledge Retriever", f"{len(evidence)} evidence items via {retrieval_backend}"),
+    }
+
+
+def _planner_node(state: WorkflowState) -> WorkflowState:
+    intent = state["intent"]
+    profile = state["profile"]
+    evidence = state["evidence"]
     plan = plan_reply(intent, profile, evidence)
-    trace.append({"node": "Reply Planner", "status": "success", "detail": plan})
+    return {"plan": plan, "trace": _with_trace(state, "Reply Planner", plan)}
 
+
+def _risk_node(state: WorkflowState) -> WorkflowState:
+    intent = state["intent"]
+    evidence = state["evidence"]
     warnings = check_risks(intent, evidence)
-    trace.append({"node": "Risk Checker", "status": "success", "detail": warnings or ["no blocking risk"]})
+    return {"warnings": warnings, "trace": _with_trace(state, "Risk Checker", warnings or ["no blocking risk"])}
 
+
+def _composer_node(state: WorkflowState) -> WorkflowState:
+    payload = state["payload"]
+    intent = state["intent"]
+    profile = state["profile"]
+    evidence = state["evidence"]
+    plan = state["plan"]
+    warnings = state["warnings"]
     draft = compose_reply(payload, intent, profile, evidence, plan, warnings)
     warnings = check_risks(intent, evidence, draft)
-    trace.append({"node": "Final Composer", "status": "success", "detail": "reply drafted"})
+    return {
+        "draft": draft,
+        "warnings": warnings,
+        "trace": _with_trace(state, "Final Composer", "reply drafted"),
+    }
+
+
+def _run_nodes_sequentially(payload: dict[str, Any]) -> tuple[WorkflowState, str]:
+    state: WorkflowState = {"payload": payload, "trace": []}
+    for node in [_intent_node, _profile_node, _retrieval_node, _planner_node, _risk_node, _composer_node]:
+        state.update(node(state))
+    return state, "sequential-fallback"
+
+
+def _run_nodes(payload: dict[str, Any]) -> tuple[WorkflowState, str]:
+    try:
+        from langgraph.graph import END, START, StateGraph
+    except ImportError:
+        return _run_nodes_sequentially(payload)
+
+    builder = StateGraph(WorkflowState)
+    builder.add_node("intent_classifier", _intent_node)
+    builder.add_node("customer_profiler", _profile_node)
+    builder.add_node("knowledge_retriever", _retrieval_node)
+    builder.add_node("reply_planner", _planner_node)
+    builder.add_node("risk_checker", _risk_node)
+    builder.add_node("final_composer", _composer_node)
+    builder.add_edge(START, "intent_classifier")
+    builder.add_edge("intent_classifier", "customer_profiler")
+    builder.add_edge("customer_profiler", "knowledge_retriever")
+    builder.add_edge("knowledge_retriever", "reply_planner")
+    builder.add_edge("reply_planner", "risk_checker")
+    builder.add_edge("risk_checker", "final_composer")
+    builder.add_edge("final_composer", END)
+    return builder.compile().invoke({"payload": payload, "trace": []}), "langgraph"
+
+
+def run_agent_workflow(payload: dict[str, Any]) -> AgentResult:
+    state, orchestration_backend = _run_nodes(payload)
+    intent = state["intent"]
+    intent_confidence = state["intent_confidence"]
+    profile = state["profile"]
+    evidence = state["evidence"]
+    plan = state["plan"]
+    warnings = state["warnings"]
+    draft = state["draft"]
+    trace = state["trace"]
 
     confidence = intent_confidence
     if evidence:
@@ -288,4 +391,6 @@ def run_agent_workflow(payload: dict[str, Any]) -> AgentResult:
         reply_draft=draft,
         confidence=confidence,
         trace=trace,
+        orchestration_backend=orchestration_backend,
+        retrieval_backend=state["retrieval_backend"],
     )

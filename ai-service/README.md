@@ -19,10 +19,15 @@ Optional environment variables:
 DEEPSEEK_API_KEY=your_key
 DEEPSEEK_API_URL=https://api.deepseek.com/chat/completions
 DEEPSEEK_MODEL=deepseek-chat
+AI_RETRIEVAL_BACKEND=lexical
+QDRANT_EMBEDDING_MODEL=BAAI/bge-small-en
 ```
 
 If no API key is configured, the workflow falls back to deterministic template
-generation. This keeps demos and tests stable.
+generation. This keeps demos and tests stable. The default retriever is a
+lightweight local lexical retriever. Set `AI_RETRIEVAL_BACKEND=qdrant` to use
+Qdrant local in-memory vector search with FastEmbed. The workflow uses LangGraph
+when installed and falls back to the same sequential nodes for minimal tests.
 
 ## API
 
@@ -44,4 +49,5 @@ orders, and recent interactions. Output contains:
 
 ```bash
 python -m unittest discover tests
+python run_evaluation.py
 ```
