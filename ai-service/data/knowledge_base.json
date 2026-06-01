@@ -1,0 +1,33 @@
+[
+  {
+    "id": "policy_return_7d",
+    "type": "policy",
+    "title": "7 day return policy",
+    "text": "Non-customized products can be returned within 7 days if unused and packaging is complete. Customer service should first confirm order number, product status, and reason."
+  },
+  {
+    "id": "policy_vip",
+    "type": "policy",
+    "title": "VIP customer service policy",
+    "text": "High value customers should receive priority handling, warmer tone, and optional manual follow-up. Do not promise discounts without a real promotion or manager approval."
+  },
+  {
+    "id": "faq_stock",
+    "type": "faq",
+    "title": "Stock and product recommendation",
+    "text": "When recommending products, only use currently available products from the CRM product list. If no product matches, say that no reliable match was found and offer to collect more requirements."
+  },
+  {
+    "id": "faq_complaint",
+    "type": "faq",
+    "title": "Complaint handling",
+    "text": "For complaints, first acknowledge the customer's feeling, then ask for key information, provide a concrete next step, and avoid blaming the customer."
+  },
+  {
+    "id": "policy_shipping_delay",
+    "type": "policy",
+    "title": "Shipping delay handling",
+    "text": "If the issue is delayed shipping, customer service should check logistics status, give an estimated update window, and offer follow-up notification."
+  }
+]
+

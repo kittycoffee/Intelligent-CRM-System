@@ -1,0 +1,27 @@
+[
+  {
+    "id": "case_product_recommend",
+    "content": "我想买一款适合通勤的耳机，有没有推荐？",
+    "expected_intent": "product_consulting",
+    "must_have": ["recommend", "evidence"]
+  },
+  {
+    "id": "case_complaint",
+    "content": "我上次买的东西到现在还没发货，体验太差了",
+    "expected_intent": "complaint",
+    "must_have": ["apology", "next_step"]
+  },
+  {
+    "id": "case_after_sales",
+    "content": "这个商品可以退货吗？包装还在",
+    "expected_intent": "after_sales",
+    "must_have": ["policy", "confirm_info"]
+  },
+  {
+    "id": "case_no_match",
+    "content": "有没有潜水用的专业设备？",
+    "expected_intent": "product_consulting",
+    "must_have": ["no_fabrication"]
+  }
+]
+
