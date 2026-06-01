@@ -1,0 +1,22 @@
+# Changelog
+
+All notable project changes are documented here.
+
+## [Unreleased]
+
+### Added
+
+- Added a FastAPI AI customer-operations service with a six-node work-order workflow.
+- Added optional LangGraph orchestration with a sequential fallback for minimal local tests.
+- Added optional Qdrant local in-memory retrieval with FastEmbed and a lightweight lexical default.
+- Added an offline work-order regression set and generated evaluation report.
+- Added Java-to-Python Agent service integration with graceful degradation.
+- Added an Agent trace, evidence list, confidence score, and risk warnings to the work-order UI.
+- Added demo seed SQL and a resume-ready project description.
+
+### Changed
+
+- Added explicit HTTP timeouts for DeepSeek API calls.
+- Moved database credentials to environment-variable overrides.
+- Marked database-mutating Java integration tests as manual tests.
+- Rewrote the README around verifiable AI workflow behavior and engineering boundaries.
