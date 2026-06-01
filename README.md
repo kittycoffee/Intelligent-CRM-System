@@ -58,7 +58,7 @@
 │   ├── entity/              # 数据库实体类 (OrderInfo, ProductInfo 等)
 │   └── utils/               # 系统通用工具类 (Result 封装等)
 ├── src/main/resources/
-│   └── application.properties # 数据库连接与 AI API Key 配置
+│   └── application.properties # 数据库连接配置
 ```
 
 ---
