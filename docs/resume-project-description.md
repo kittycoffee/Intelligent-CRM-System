@@ -10,17 +10,18 @@ Spring Boot, MySQL, Vue 3, FastAPI, LangGraph, Qdrant, DeepSeek API
 
 ## 项目描述
 
-面向电商 CRM 的 AI 工单辅助系统。在客户、订单、商品和 RFM 分层能力基础上，引入独立 AI 服务，通过可观测 Agent Workflow 完成意图识别、客户画像聚合、知识检索、回复规划、风险检查和话术生成，辅助客服处理咨询、投诉和售后工单。
+面向电商 CRM 的 AI 工单辅助系统。在客户、订单、商品和简化 RFM 分层能力基础上，引入独立 AI 服务，通过有证据约束的 Agent Workflow 完成意图识别、客户策略分析、混合检索、回复规划和风险检查，辅助客服处理咨询、投诉、售后与活动咨询工单。
 
 ## 推荐职责表述
 
-- 将 CRM 业务系统与 FastAPI AI 服务解耦，设计 `Intent Classifier -> Customer Profiler -> Knowledge Retriever -> Reply Planner -> Risk Checker -> Final Composer` 工作流，并在前端展示节点轨迹、召回证据和风险提示。
-- 基于在售商品、FAQ 和售后政策构建检索增强链路，支持轻量检索和 Qdrant 本地向量检索；在无可靠商品证据时阻止模型生成推荐，降低无依据回复风险。
-- 聚合客户 RFM 标签、历史订单和工单记录，生成差异化服务策略；对高价值客户、投诉、售后等场景设置不同回复规划和人工确认要求。
-- 增加超时、异常降级和模板 fallback，确保 Python AI 服务或 LLM API 不可用时 CRM 工单主流程仍可继续处理。
-- 构建 20 条离线工单回归集，覆盖推荐、投诉、售后、活动咨询和无匹配商品等场景，用于验证意图识别、结构化输出和风险护栏。
+- 设计 `Intent Classifier -> Customer Strategy Profiler -> Offer & Entitlement Resolver -> Handbook Retriever -> Reply Planner -> Risk Checker -> Final Composer` 工作流，将客服内部动作与客户回复草稿分离，并支持人工修正意图后重新生成。
+- 采用 MySQL 与 Qdrant 混合检索：从 MySQL 精确查询商品库存、有效活动和服务权益；对匿名化售后手册、物流说明和 FAQ 执行关键词优先、中文向量检索补充的 RAG 链路，避免无依据推荐。
+- 使用简化 RFM 规则拆分客户价值等级和生命周期风险，为高价值投诉、售后快速通道、流失风险客户活动推荐等场景生成差异化处理策略。
+- 增加证据充分度、越权承诺检查和异常降级机制，限制 AI 直接承诺优惠、退款和赔偿；Python 服务或 Qdrant 不可用时仍可继续处理工单。
+- 构建 30 条离线场景回归集，统计意图识别准确率、证据召回率、结构化输出通过率、无依据承诺次数和降级成功率。
 
 ## 面试讲述边界
 
-- 可以说：这是一个可观测的 Agent Workflow，有 LangGraph 编排、RAG 检索、业务护栏、服务降级和小规模离线评测。
+- 可以说：这是一个可观测的 Agent Workflow，有混合 RAG、业务证据约束、服务降级和小规模离线评测。
 - 不要说：完全消除幻觉、生产级高并发、复杂多智能体协作、已经在线服务真实用户。
+

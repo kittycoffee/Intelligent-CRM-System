@@ -1,53 +1,37 @@
 # AI Customer Operations Agent Service
 
-This service provides the AI workflow behind the CRM work-order assistant.
-
-It exposes a FastAPI endpoint for the Java CRM backend, while keeping the core
-workflow in pure Python so it can be tested without external services.
+FastAPI service for evidence-bound CRM work-order assistance.
 
 ## Run
 
 ```bash
-cd ai-service
 python -m pip install -r requirements.txt
+python ingest_handbook.py
 uvicorn app:app --reload --port 8090
 ```
 
-Optional environment variables:
+Configuration:
 
 ```properties
-DEEPSEEK_API_KEY=your_key
-DEEPSEEK_API_URL=https://api.deepseek.com/chat/completions
-DEEPSEEK_MODEL=deepseek-chat
-AI_RETRIEVAL_BACKEND=lexical
-QDRANT_EMBEDDING_MODEL=BAAI/bge-small-en
+AI_RETRIEVAL_BACKEND=hybrid
+QDRANT_LOCAL_PATH=./data/qdrant
+QDRANT_EMBEDDING_MODEL=BAAI/bge-small-zh-v1.5
 ```
 
-If no API key is configured, the workflow falls back to deterministic template
-generation. This keeps demos and tests stable. The default retriever is a
-lightweight local lexical retriever. Set `AI_RETRIEVAL_BACKEND=qdrant` to use
-Qdrant local in-memory vector search with FastEmbed. The workflow uses LangGraph
-when installed and falls back to the same sequential nodes for minimal tests.
+Hybrid retrieval uses keyword matches first and persisted Qdrant semantic scores as a supplement. MySQL campaigns, service entitlements, product stock, and discount amounts arrive from the Java CRM payload and never use vector search.
 
-## API
+`POST /agent/work-order` returns:
 
-`POST /agent/work-order`
+- detected intent and customer strategy
+- eligible campaigns and service entitlements with MySQL evidence IDs
+- retrieved handbook chunks with keyword or Qdrant evidence IDs
+- internal staff actions and a separate customer-facing reply draft
+- risk flags, evidence sufficiency, and node execution trace
 
-Input is a CRM work-order context with customer profile, RFM snapshot, products,
-orders, and recent interactions. Output contains:
-
-- intent classification
-- customer profile summary
-- retrieved evidence
-- reply plan
-- risk warnings
-- final reply draft
-- confidence score
-- node execution trace
-
-## Tests
+## Test
 
 ```bash
-python -m unittest discover tests
+python -m unittest discover -s tests -v
 python run_evaluation.py
 ```
+

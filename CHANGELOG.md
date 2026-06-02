@@ -16,6 +16,8 @@ All notable project changes are documented here.
 - Added Java payload mapping for campaigns, entitlements, customer strategy dimensions, and intent overrides.
 - Added persisted work-order Agent JSON, detected intent, and evidence sufficiency with an intent-correction endpoint.
 - Added work-order UI sections for customer strategy, eligible campaigns, service entitlements, handbook evidence, internal actions, risk flags, and staff intent correction.
+- Updated project and AI-service documentation with hybrid retrieval, evidence boundaries, migrations, ingestion steps, evaluation metrics, and resume-ready wording.
+- Added SOCKS proxy support for FastEmbed model downloads and ignored local persisted Qdrant data.
 - Added a FastAPI AI customer-operations service with a six-node work-order workflow.
 - Added optional LangGraph orchestration with a sequential fallback for minimal local tests.
 - Added optional Qdrant local in-memory retrieval with FastEmbed and a lightweight lexical default.
