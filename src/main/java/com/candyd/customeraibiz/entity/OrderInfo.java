@@ -21,4 +21,11 @@ public class OrderInfo {
     private BigDecimal orderAmount; // 订单金额
     private LocalDateTime orderDate; // 下单时间
     private Integer orderStatus;  // 订单状态
+    private String fulfillmentStatus;
+    private String logisticsStatus;
+    private LocalDateTime shippedTime;
+    private LocalDateTime signedTime;
+    private String paymentMethod;
+    private String refundStatus;
+    private LocalDateTime refundApplyTime;
 }

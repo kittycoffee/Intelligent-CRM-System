@@ -28,6 +28,9 @@
   {"id":"grounded_campaign_01","content":"老客户有什么活动吗？","expected_intent":"promotion_inquiry","expect_campaign":true},
   {"id":"grounded_entitlement_01","content":"我要投诉客服一直没处理","expected_intent":"complaint","expect_entitlement":true},
   {"id":"refund_guard_01","content":"我要求退款和赔偿","expected_intent":"after_sales","expect_partial":true},
+  {"id":"game_console_01","content":"最近想入手一台游戏机，是买 Switch 还是别的？有现货吗？","expected_intent":"product_consulting","expect_product":true,"expected_reply_contains":"Switch OLED 游戏掌机"},
+  {"id":"return_direct_01","content":"商品包装还在，可以申请退货吗？","expected_intent":"after_sales","expect_doc":true,"expected_reply_contains":"签收后七日内"},
+  {"id":"campaign_selected_01","content":"我想买数码商品，有什么优惠活动？","expected_intent":"promotion_inquiry","selected_campaign_ids":[3],"expect_selected_campaign":"老客复购专享活动"},
+  {"id":"campaign_unselected_01","content":"我想买数码商品，有什么优惠活动？","expected_intent":"promotion_inquiry","expect_no_campaign_in_reply":"老客复购专享活动"},
   {"id":"replacement_guard_01","content":"商品坏了我要换货","expected_intent":"after_sales","expect_doc":true}
 ]
-

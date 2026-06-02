@@ -41,6 +41,7 @@ public class InteractionController {
             Map<String, Object> map = new HashMap<>();
             map.put("id", i.getId());
             map.put("custId", i.getCustId());
+            map.put("relatedOrderId", i.getRelatedOrderId());
             map.put("custName", customerMapper.selectById(i.getCustId()).getCustName());
             map.put("type", i.getInteractionType());
             map.put("content", i.getContent());
@@ -65,6 +66,7 @@ public class InteractionController {
 
         CustInteraction interaction = new CustInteraction();
         interaction.setCustId(custId);
+        interaction.setRelatedOrderId((String) params.get("relatedOrderId"));
         interaction.setContent(content);
         interaction.setInteractionType(type);
         interaction.setCreateTime(LocalDateTime.now());
@@ -120,6 +122,7 @@ public class InteractionController {
             Map<String, Object> map = new HashMap<>();
             map.put("id", i.getId());
             map.put("custId", i.getCustId());
+            map.put("relatedOrderId", i.getRelatedOrderId());
             map.put("custName", customerMapper.selectById(i.getCustId()).getCustName());
             map.put("type", i.getInteractionType());
             map.put("content", i.getContent());
@@ -175,6 +178,13 @@ public class InteractionController {
         interaction.setIntentOverride(String.valueOf(params.getOrDefault("intentOverride", "")));
         interactionMapper.updateById(interaction);
         return agentWorkflowService.generateWorkOrderResult(interaction);
+    }
+
+    @PostMapping("/analyze/{id}")
+    public Map<String, Object> analyzeInteraction(@PathVariable Long id, @RequestBody Map<String, Object> params) {
+        CustInteraction interaction = interactionMapper.selectById(id);
+        if (interaction == null) return Map.of("code", 404, "msg", "记录不存在");
+        return agentWorkflowService.generateWorkOrderResult(interaction, params);
     }
 
     private Map<String, Object> parseAgentResult(String json) {

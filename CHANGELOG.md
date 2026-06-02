@@ -6,6 +6,11 @@ All notable project changes are documented here.
 
 ### Added
 
+- Added a shared Python Qwen client with project `.env` loading, DashScope JSON Mode, disabled thinking output, one retry, and template fallback.
+- Added additive order fulfillment fields and related work-order order IDs for evidence-bound logistics and refund replies.
+- Added intent-aware handbook retrieval, structured policy guidance, and customer-safe policy summaries.
+- Added POST work-order analysis with selected campaign IDs while retaining the legacy GET endpoint.
+- Added work-order UI controls for selecting campaigns, regenerating replies, linking orders, and viewing matched products, policy guidance, and generation backend.
 - Added MySQL campaign and service-entitlement schemas with AI-safe reply boundaries.
 - Added additive migration fields for customer value tiers, lifecycle risk, detected intent, intent overrides, persisted Agent results, and evidence sufficiency.
 - Added demo campaigns and service entitlements for differentiated customer operations scenarios.
@@ -29,7 +34,10 @@ All notable project changes are documented here.
 
 ### Changed
 
-- Added explicit HTTP timeouts for DeepSeek API calls.
+- Replaced DeepSeek configuration and legacy Java API naming with Alibaba Cloud DashScope `qwen3.6-plus` configuration.
+- Restricted customer-facing campaign text to staff-selected campaigns; eligible but unselected offers remain internal candidates.
+- Required staff-selected campaigns to appear in grounded replies with campaign evidence IDs, and normalized the local FastAPI URL to `127.0.0.1` for Windows development.
+- Added explicit HTTP timeouts for Qwen API calls.
 - Changed retrieval to keyword-first hybrid search with optional Qdrant semantic supplementation.
 - Replaced heuristic confidence percentages with explainable evidence sufficiency levels.
 - Removed the manual consultation/complaint choice from interaction capture; staff record raw feedback and correct intent only when needed.

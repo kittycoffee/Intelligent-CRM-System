@@ -1,12 +1,19 @@
 {
-  "total": 30,
-  "passed": 30,
+  "total": 34,
+  "passed": 34,
   "intent_accuracy": 1.0,
   "evidence_recall_rate": 1.0,
   "grounded_output_rate": 1.0,
   "unauthorized_commitment_count": 0,
   "json_schema_pass_rate": 1.0,
   "fallback_success_rate": 1.0,
+  "direct_answer_rate": 1.0,
+  "policy_usage_rate": 1.0,
+  "selected_campaign_inclusion_rate": 1.0,
+  "unselected_campaign_leak_count": 0,
+  "irrelevant_evidence_count": 0,
+  "qwen_generation_success_rate": 0.0,
+  "rewrite_trigger_count": 0,
   "failed_cases": [],
   "results": [
     {
@@ -17,9 +24,12 @@
         "json_schema": true,
         "grounded": true,
         "unauthorized_commitment": true,
-        "product": true
+        "product": true,
+        "relevant_evidence": true
       },
-      "intent": "product_consulting"
+      "intent": "product_consulting",
+      "generation_backend": "template_fallback",
+      "rewrite_count": 0
     },
     {
       "id": "product_02",
@@ -29,9 +39,12 @@
         "json_schema": true,
         "grounded": true,
         "unauthorized_commitment": true,
-        "product": true
+        "product": true,
+        "relevant_evidence": true
       },
-      "intent": "product_consulting"
+      "intent": "product_consulting",
+      "generation_backend": "template_fallback",
+      "rewrite_count": 0
     },
     {
       "id": "product_03",
@@ -41,9 +54,12 @@
         "json_schema": true,
         "grounded": true,
         "unauthorized_commitment": true,
-        "product": true
+        "product": true,
+        "relevant_evidence": true
       },
-      "intent": "product_consulting"
+      "intent": "product_consulting",
+      "generation_backend": "template_fallback",
+      "rewrite_count": 0
     },
     {
       "id": "product_missing_01",
@@ -53,9 +69,12 @@
         "json_schema": true,
         "grounded": true,
         "unauthorized_commitment": true,
-        "insufficient": true
+        "insufficient": true,
+        "relevant_evidence": true
       },
-      "intent": "product_consulting"
+      "intent": "product_consulting",
+      "generation_backend": "template_fallback",
+      "rewrite_count": 0
     },
     {
       "id": "product_missing_02",
@@ -65,9 +84,12 @@
         "json_schema": true,
         "grounded": true,
         "unauthorized_commitment": true,
-        "insufficient": true
+        "insufficient": true,
+        "relevant_evidence": true
       },
-      "intent": "product_consulting"
+      "intent": "product_consulting",
+      "generation_backend": "template_fallback",
+      "rewrite_count": 0
     },
     {
       "id": "complaint_shipping_01",
@@ -77,9 +99,12 @@
         "json_schema": true,
         "grounded": true,
         "unauthorized_commitment": true,
-        "doc": true
+        "doc": true,
+        "relevant_evidence": true
       },
-      "intent": "complaint"
+      "intent": "complaint",
+      "generation_backend": "template_fallback",
+      "rewrite_count": 0
     },
     {
       "id": "complaint_shipping_02",
@@ -89,9 +114,12 @@
         "json_schema": true,
         "grounded": true,
         "unauthorized_commitment": true,
-        "doc": true
+        "doc": true,
+        "relevant_evidence": true
       },
-      "intent": "complaint"
+      "intent": "complaint",
+      "generation_backend": "template_fallback",
+      "rewrite_count": 0
     },
     {
       "id": "complaint_service_01",
@@ -101,9 +129,12 @@
         "json_schema": true,
         "grounded": true,
         "unauthorized_commitment": true,
-        "doc": true
+        "doc": true,
+        "relevant_evidence": true
       },
-      "intent": "complaint"
+      "intent": "complaint",
+      "generation_backend": "template_fallback",
+      "rewrite_count": 0
     },
     {
       "id": "complaint_signed_01",
@@ -113,9 +144,12 @@
         "json_schema": true,
         "grounded": true,
         "unauthorized_commitment": true,
-        "doc": true
+        "doc": true,
+        "relevant_evidence": true
       },
-      "intent": "complaint"
+      "intent": "complaint",
+      "generation_backend": "template_fallback",
+      "rewrite_count": 0
     },
     {
       "id": "complaint_vip_01",
@@ -125,9 +159,12 @@
         "json_schema": true,
         "grounded": true,
         "unauthorized_commitment": true,
-        "entitlement": true
+        "entitlement": true,
+        "relevant_evidence": true
       },
-      "intent": "complaint"
+      "intent": "complaint",
+      "generation_backend": "template_fallback",
+      "rewrite_count": 0
     },
     {
       "id": "after_sales_return_01",
@@ -137,9 +174,12 @@
         "json_schema": true,
         "grounded": true,
         "unauthorized_commitment": true,
-        "doc": true
+        "doc": true,
+        "relevant_evidence": true
       },
-      "intent": "after_sales"
+      "intent": "after_sales",
+      "generation_backend": "template_fallback",
+      "rewrite_count": 0
     },
     {
       "id": "after_sales_return_02",
@@ -149,9 +189,12 @@
         "json_schema": true,
         "grounded": true,
         "unauthorized_commitment": true,
-        "doc": true
+        "doc": true,
+        "relevant_evidence": true
       },
-      "intent": "after_sales"
+      "intent": "after_sales",
+      "generation_backend": "template_fallback",
+      "rewrite_count": 0
     },
     {
       "id": "after_sales_quality_01",
@@ -161,9 +204,12 @@
         "json_schema": true,
         "grounded": true,
         "unauthorized_commitment": true,
-        "doc": true
+        "doc": true,
+        "relevant_evidence": true
       },
-      "intent": "after_sales"
+      "intent": "after_sales",
+      "generation_backend": "template_fallback",
+      "rewrite_count": 0
     },
     {
       "id": "after_sales_invoice_01",
@@ -173,9 +219,12 @@
         "json_schema": true,
         "grounded": true,
         "unauthorized_commitment": true,
-        "doc": true
+        "doc": true,
+        "relevant_evidence": true
       },
-      "intent": "after_sales"
+      "intent": "after_sales",
+      "generation_backend": "template_fallback",
+      "rewrite_count": 0
     },
     {
       "id": "after_sales_refund_01",
@@ -185,9 +234,12 @@
         "json_schema": true,
         "grounded": true,
         "unauthorized_commitment": true,
-        "partial": true
+        "partial": true,
+        "relevant_evidence": true
       },
-      "intent": "after_sales"
+      "intent": "after_sales",
+      "generation_backend": "template_fallback",
+      "rewrite_count": 0
     },
     {
       "id": "promotion_coupon_01",
@@ -198,9 +250,12 @@
         "grounded": true,
         "unauthorized_commitment": true,
         "doc": true,
-        "campaign": true
+        "campaign": true,
+        "relevant_evidence": true
       },
-      "intent": "promotion_inquiry"
+      "intent": "promotion_inquiry",
+      "generation_backend": "template_fallback",
+      "rewrite_count": 0
     },
     {
       "id": "promotion_discount_01",
@@ -211,9 +266,12 @@
         "grounded": true,
         "unauthorized_commitment": true,
         "doc": true,
-        "campaign": true
+        "campaign": true,
+        "relevant_evidence": true
       },
-      "intent": "promotion_inquiry"
+      "intent": "promotion_inquiry",
+      "generation_backend": "template_fallback",
+      "rewrite_count": 0
     },
     {
       "id": "promotion_price_01",
@@ -223,9 +281,12 @@
         "json_schema": true,
         "grounded": true,
         "unauthorized_commitment": true,
-        "doc": true
+        "doc": true,
+        "relevant_evidence": true
       },
-      "intent": "promotion_inquiry"
+      "intent": "promotion_inquiry",
+      "generation_backend": "template_fallback",
+      "rewrite_count": 0
     },
     {
       "id": "promotion_expired_01",
@@ -235,9 +296,12 @@
         "json_schema": true,
         "grounded": true,
         "unauthorized_commitment": true,
-        "no_campaign": true
+        "no_campaign": true,
+        "relevant_evidence": true
       },
-      "intent": "promotion_inquiry"
+      "intent": "promotion_inquiry",
+      "generation_backend": "template_fallback",
+      "rewrite_count": 0
     },
     {
       "id": "promotion_wrong_segment_01",
@@ -247,9 +311,12 @@
         "json_schema": true,
         "grounded": true,
         "unauthorized_commitment": true,
-        "no_campaign": true
+        "no_campaign": true,
+        "relevant_evidence": true
       },
-      "intent": "promotion_inquiry"
+      "intent": "promotion_inquiry",
+      "generation_backend": "template_fallback",
+      "rewrite_count": 0
     },
     {
       "id": "general_01",
@@ -258,9 +325,12 @@
         "intent": true,
         "json_schema": true,
         "grounded": true,
-        "unauthorized_commitment": true
+        "unauthorized_commitment": true,
+        "relevant_evidence": true
       },
-      "intent": "general_service"
+      "intent": "general_service",
+      "generation_backend": "template_fallback",
+      "rewrite_count": 0
     },
     {
       "id": "general_02",
@@ -269,9 +339,12 @@
         "intent": true,
         "json_schema": true,
         "grounded": true,
-        "unauthorized_commitment": true
+        "unauthorized_commitment": true,
+        "relevant_evidence": true
       },
-      "intent": "general_service"
+      "intent": "general_service",
+      "generation_backend": "template_fallback",
+      "rewrite_count": 0
     },
     {
       "id": "general_03",
@@ -280,9 +353,12 @@
         "intent": true,
         "json_schema": true,
         "grounded": true,
-        "unauthorized_commitment": true
+        "unauthorized_commitment": true,
+        "relevant_evidence": true
       },
-      "intent": "general_service"
+      "intent": "general_service",
+      "generation_backend": "template_fallback",
+      "rewrite_count": 0
     },
     {
       "id": "general_04",
@@ -291,9 +367,12 @@
         "intent": true,
         "json_schema": true,
         "grounded": true,
-        "unauthorized_commitment": true
+        "unauthorized_commitment": true,
+        "relevant_evidence": true
       },
-      "intent": "general_service"
+      "intent": "general_service",
+      "generation_backend": "template_fallback",
+      "rewrite_count": 0
     },
     {
       "id": "override_01",
@@ -303,9 +382,12 @@
         "json_schema": true,
         "grounded": true,
         "unauthorized_commitment": true,
-        "doc": true
+        "doc": true,
+        "relevant_evidence": true
       },
-      "intent": "after_sales"
+      "intent": "after_sales",
+      "generation_backend": "template_fallback",
+      "rewrite_count": 0
     },
     {
       "id": "fallback_lexical_01",
@@ -315,9 +397,12 @@
         "json_schema": true,
         "grounded": true,
         "unauthorized_commitment": true,
-        "doc": true
+        "doc": true,
+        "relevant_evidence": true
       },
-      "intent": "general_service"
+      "intent": "general_service",
+      "generation_backend": "template_fallback",
+      "rewrite_count": 0
     },
     {
       "id": "grounded_campaign_01",
@@ -327,9 +412,12 @@
         "json_schema": true,
         "grounded": true,
         "unauthorized_commitment": true,
-        "campaign": true
+        "campaign": true,
+        "relevant_evidence": true
       },
-      "intent": "promotion_inquiry"
+      "intent": "promotion_inquiry",
+      "generation_backend": "template_fallback",
+      "rewrite_count": 0
     },
     {
       "id": "grounded_entitlement_01",
@@ -339,9 +427,12 @@
         "json_schema": true,
         "grounded": true,
         "unauthorized_commitment": true,
-        "entitlement": true
+        "entitlement": true,
+        "relevant_evidence": true
       },
-      "intent": "complaint"
+      "intent": "complaint",
+      "generation_backend": "template_fallback",
+      "rewrite_count": 0
     },
     {
       "id": "refund_guard_01",
@@ -351,9 +442,74 @@
         "json_schema": true,
         "grounded": true,
         "unauthorized_commitment": true,
-        "partial": true
+        "partial": true,
+        "relevant_evidence": true
       },
-      "intent": "after_sales"
+      "intent": "after_sales",
+      "generation_backend": "template_fallback",
+      "rewrite_count": 0
+    },
+    {
+      "id": "game_console_01",
+      "passed": true,
+      "checks": {
+        "intent": true,
+        "json_schema": true,
+        "grounded": true,
+        "unauthorized_commitment": true,
+        "product": true,
+        "direct_answer": true,
+        "relevant_evidence": true
+      },
+      "intent": "product_consulting",
+      "generation_backend": "template_fallback",
+      "rewrite_count": 0
+    },
+    {
+      "id": "return_direct_01",
+      "passed": true,
+      "checks": {
+        "intent": true,
+        "json_schema": true,
+        "grounded": true,
+        "unauthorized_commitment": true,
+        "doc": true,
+        "direct_answer": true,
+        "relevant_evidence": true
+      },
+      "intent": "after_sales",
+      "generation_backend": "template_fallback",
+      "rewrite_count": 0
+    },
+    {
+      "id": "campaign_selected_01",
+      "passed": true,
+      "checks": {
+        "intent": true,
+        "json_schema": true,
+        "grounded": true,
+        "unauthorized_commitment": true,
+        "selected_campaign": true,
+        "relevant_evidence": true
+      },
+      "intent": "promotion_inquiry",
+      "generation_backend": "template_fallback",
+      "rewrite_count": 0
+    },
+    {
+      "id": "campaign_unselected_01",
+      "passed": true,
+      "checks": {
+        "intent": true,
+        "json_schema": true,
+        "grounded": true,
+        "unauthorized_commitment": true,
+        "no_campaign_leak": true,
+        "relevant_evidence": true
+      },
+      "intent": "promotion_inquiry",
+      "generation_backend": "template_fallback",
+      "rewrite_count": 0
     },
     {
       "id": "replacement_guard_01",
@@ -363,9 +519,12 @@
         "json_schema": true,
         "grounded": true,
         "unauthorized_commitment": true,
-        "doc": true
+        "doc": true,
+        "relevant_evidence": true
       },
-      "intent": "after_sales"
+      "intent": "after_sales",
+      "generation_backend": "template_fallback",
+      "rewrite_count": 0
     }
   ]
 }

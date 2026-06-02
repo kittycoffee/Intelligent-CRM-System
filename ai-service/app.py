@@ -20,6 +20,8 @@ class WorkOrderRequest(BaseModel):
     history: list[dict[str, Any]] = Field(default_factory=list)
     campaigns: list[dict[str, Any]] = Field(default_factory=list)
     entitlements: list[dict[str, Any]] = Field(default_factory=list)
+    selectedCampaignIds: list[int] = Field(default_factory=list)
+    relatedOrder: dict[str, Any] = Field(default_factory=dict)
 
 
 app = FastAPI(title="CRM AI Customer Operations Agent", version="1.0.0")

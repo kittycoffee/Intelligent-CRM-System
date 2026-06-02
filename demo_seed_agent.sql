@@ -44,6 +44,10 @@ INSERT INTO product_info (product_name, category, price, stock, features, status
 SELECT '轻薄羽绒服', '服装', 599.00, 12, '保暖轻便，适合冬季通勤', 1
 WHERE NOT EXISTS (SELECT 1 FROM product_info WHERE product_name = '轻薄羽绒服');
 
+INSERT INTO product_info (product_name, category, price, stock, features, status)
+SELECT 'Switch OLED 游戏掌机', '数码', 2099.00, 18, '便携游戏，多人娱乐', 1
+WHERE NOT EXISTS (SELECT 1 FROM product_info WHERE product_name = 'Switch OLED 游戏掌机');
+
 INSERT INTO cust_interaction (cust_id, interaction_type, content, status)
 VALUES
   (9001, '咨询', '我每天坐地铁，想买一款通勤耳机，有没有推荐？', 0),

@@ -19,7 +19,8 @@ const loading = ref(true) // 首次加载的全屏 Loading
 // ⭐ 交互录入弹窗状态
 const showAddModal = ref(false)
 const addForm = ref({
-  content: ''
+  content: '',
+  relatedOrderId: ''
 })
 
 // ⭐ 按钮状态
@@ -95,7 +96,7 @@ function goBack() {
 
 // 打开弹窗
 function openAddModal() {
-  addForm.value = {content: ''}
+  addForm.value = {content: '', relatedOrderId: ''}
   showAddModal.value = true
 }
 
@@ -109,6 +110,7 @@ async function submitAddRecord() {
     await axios.post('/api/interaction/add', {
       custId: custId,
       content: addForm.value.content
+      , relatedOrderId: addForm.value.relatedOrderId || null
     })
 
     // 录入成功后，刷新页面数据 (AI 也会在后台更新)
@@ -271,6 +273,16 @@ function getLevelClass(level) {
       <div class="modal-content">
         <h3>📝 录入新交互</h3>
         <p class="modal-desc">系统将自动触发 AI 重新评估该客户的价值与流失风险。</p>
+
+        <div class="form-item">
+          <label>关联订单（可选）：</label>
+          <select v-model="addForm.relatedOrderId">
+            <option value="">暂不关联订单</option>
+            <option v-for="order in orders" :key="order.orderId" :value="order.orderId">
+              {{ order.orderId }} · {{ order.productName }}
+            </option>
+          </select>
+        </div>
 
         <div class="form-item">
           <label>详细内容：</label>

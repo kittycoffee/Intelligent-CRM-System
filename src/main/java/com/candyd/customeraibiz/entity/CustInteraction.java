@@ -18,6 +18,7 @@ public class CustInteraction {
     private Long id;
 
     private Long custId; // 关联哪个客户
+    private String relatedOrderId;
 
     private String interactionType; // 类型：电话、邮件、投诉、咨询
     private String detectedIntent;

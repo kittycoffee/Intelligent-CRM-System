@@ -56,7 +56,11 @@ public class AiAgentWorkflowService {
     private int timeoutMs;
 
     public Map<String, Object> generateWorkOrderResult(CustInteraction interaction) {
-        Map<String, Object> payload = buildPayload(interaction);
+        return generateWorkOrderResult(interaction, new HashMap<>());
+    }
+
+    public Map<String, Object> generateWorkOrderResult(CustInteraction interaction, Map<String, Object> options) {
+        Map<String, Object> payload = buildPayload(interaction, options);
         Map<String, Object> result;
 
         if (!agentEnabled) {
@@ -97,13 +101,14 @@ public class AiAgentWorkflowService {
         return response;
     }
 
-    private Map<String, Object> buildPayload(CustInteraction interaction) {
+    private Map<String, Object> buildPayload(CustInteraction interaction, Map<String, Object> options) {
         Long custId = interaction.getCustId();
         Map<String, Object> payload = new HashMap<>();
         payload.put("interactionId", interaction.getId());
         payload.put("content", interaction.getContent());
         payload.put("interactionType", interaction.getInteractionType());
-        payload.put("intentOverride", interaction.getIntentOverride());
+        payload.put("intentOverride", options.getOrDefault("intentOverride", interaction.getIntentOverride()));
+        payload.put("selectedCampaignIds", options.getOrDefault("selectedCampaignIds", new ArrayList<>()));
 
         CustomerInfo customer = customerMapper.selectById(custId);
         payload.put("customer", mapCustomer(customer));
@@ -131,6 +136,7 @@ public class AiAgentWorkflowService {
                         .last("LIMIT 10")
         );
         payload.put("orders", mapOrders(orders));
+        payload.put("relatedOrder", mapOrder(findRelatedOrder(interaction, orders)));
 
         List<CustInteraction> history = interactionMapper.selectList(
                 new QueryWrapper<CustInteraction>()
@@ -200,15 +206,39 @@ public class AiAgentWorkflowService {
     private List<Map<String, Object>> mapOrders(List<OrderInfo> orders) {
         List<Map<String, Object>> list = new ArrayList<>();
         for (OrderInfo order : orders) {
-            Map<String, Object> map = new HashMap<>();
-            map.put("orderId", order.getOrderId());
-            map.put("productName", order.getProductName());
-            map.put("orderAmount", decimalToString(order.getOrderAmount()));
-            map.put("quantity", order.getQuantity());
-            map.put("orderDate", order.getOrderDate() == null ? null : order.getOrderDate().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
-            list.add(map);
+            list.add(mapOrder(order));
         }
         return list;
+    }
+
+    private OrderInfo findRelatedOrder(CustInteraction interaction, List<OrderInfo> orders) {
+        if (interaction.getRelatedOrderId() == null || interaction.getRelatedOrderId().isBlank()) return null;
+        return orders.stream()
+                .filter(order -> interaction.getRelatedOrderId().equals(order.getOrderId()))
+                .findFirst()
+                .orElse(null);
+    }
+
+    private Map<String, Object> mapOrder(OrderInfo order) {
+        Map<String, Object> map = new HashMap<>();
+        if (order == null) return map;
+        map.put("orderId", order.getOrderId());
+        map.put("productName", order.getProductName());
+        map.put("orderAmount", decimalToString(order.getOrderAmount()));
+        map.put("quantity", order.getQuantity());
+        map.put("orderDate", formatDateTime(order.getOrderDate()));
+        map.put("fulfillmentStatus", order.getFulfillmentStatus());
+        map.put("logisticsStatus", order.getLogisticsStatus());
+        map.put("shippedTime", formatDateTime(order.getShippedTime()));
+        map.put("signedTime", formatDateTime(order.getSignedTime()));
+        map.put("paymentMethod", order.getPaymentMethod());
+        map.put("refundStatus", order.getRefundStatus());
+        map.put("refundApplyTime", formatDateTime(order.getRefundApplyTime()));
+        return map;
+    }
+
+    private String formatDateTime(LocalDateTime value) {
+        return value == null ? null : value.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
     }
 
     private List<Map<String, Object>> mapHistory(List<CustInteraction> history) {
@@ -292,6 +322,12 @@ public class AiAgentWorkflowService {
         result.put("internal_actions", List.of("记录客户诉求", "核查业务数据", "转人工确认后回复"));
         result.put("risk_flags", List.of(Map.of("level", "high", "message", "AI Agent 服务不可用，已启用人工核实流程。")));
         result.put("evidence_sufficiency", "insufficient");
+        result.put("generation_backend", "template_fallback");
+        result.put("used_evidence_ids", new ArrayList<>());
+        result.put("matched_products", new ArrayList<>());
+        result.put("selected_campaigns", new ArrayList<>());
+        result.put("policy_guidance", new ArrayList<>());
+        result.put("rewrite_count", 0);
         result.put("fallback", true);
         result.put("trace", List.of(
                 Map.of("node", "Fallback", "status", "degraded", "detail", reason)

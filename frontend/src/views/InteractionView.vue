@@ -19,6 +19,7 @@ const aiAnalysisText = ref("") // 给管理员看的分析
 const aiReplyDraft = ref("")   // 给客户发的话术
 const agentResult = ref(null)  // Agent 工作流结构化结果
 const intentOverride = ref('')
+const selectedCampaignIds = ref([])
 const intentOptions = [
   { value: '', label: '使用自动识别' },
   { value: 'product_consulting', label: '商品咨询' },
@@ -49,7 +50,10 @@ async function fetchData() {
 async function generateAiReply() {
   analyzing.value = true
   try {
-    const res = await axios.get(`/api/interaction/analyze/${currentItem.value.id}`)
+    const res = await axios.post(`/api/interaction/analyze/${currentItem.value.id}`, {
+      selectedCampaignIds: selectedCampaignIds.value,
+      intentOverride: intentOverride.value
+    })
     if (res.data && res.data.code === 404) {
       alert(res.data.msg || "记录不存在")
       return
@@ -71,9 +75,12 @@ async function regenerateReply() {
 
   analyzing.value = true;
   try {
-    const res = await axios.post(`/api/interaction/regenerate-reply/${currentItem.value.id}`);
-    if (res.data.code === 200) {
-      parseAgentResult(res.data.data);
+    const res = await axios.post(`/api/interaction/analyze/${currentItem.value.id}`, {
+      selectedCampaignIds: selectedCampaignIds.value,
+      intentOverride: intentOverride.value
+    });
+    if (!res.data.code || res.data.code === 200) {
+      parseAgentResult(res.data.data || res.data);
       currentItem.value.aiSuggestedReply = aiReplyDraft.value;
     } else {
       alert(res.data.msg || "生成失败");
@@ -95,6 +102,7 @@ function openHandleModal(item) {
   aiReplyDraft.value = ""
   agentResult.value = null
   intentOverride.value = item.intentOverride || ''
+  selectedCampaignIds.value = []
 
   if (item.agentResult) {
     parseAgentResult(item.agentResult)
@@ -123,6 +131,7 @@ function parseAgentResult(result) {
   }
 
   agentResult.value = result
+  selectedCampaignIds.value = (result.selected_campaigns || []).map(item => item.campaign_id)
   aiReplyDraft.value = result.reply_draft || result.replyDraft || ''
   const profile = result.customer_profile || {}
   const level = profile.level || profile.customerLevel || '未知等级'
@@ -141,6 +150,10 @@ function sufficiencyLabel(value) {
 function evidenceLabel(item) {
   const sourceMap = { product: '商品', policy: '政策', faq: 'FAQ' }
   return sourceMap[item.source] || item.source || '证据'
+}
+
+function generationLabel(value) {
+  return { qwen: 'Qwen3.6-Plus', qwen_rewrite: 'Qwen 重写后通过', template_fallback: '模板降级' }[value] || '待生成'
 }
 
 async function applyIntentOverride() {
@@ -323,6 +336,7 @@ function formatTime(t) { return t ? t.replace('T', ' ') : '' }
                   {{ sufficiencyLabel(agentResult.evidence_sufficiency) }}
                 </span>
                 <span v-if="agentResult.fallback" class="warning-chip">已降级</span>
+                <span>生成来源：{{ generationLabel(agentResult.generation_backend) }}</span>
               </div>
 
               <div class="agent-section intent-editor">
@@ -344,10 +358,21 @@ function formatTime(t) { return t ? t.replace('T', ' ') : '' }
 
               <div v-if="agentResult.available_campaigns?.length" class="agent-section">
                 <strong>可用活动</strong>
-                <div v-for="item in agentResult.available_campaigns" :key="item.evidence_id" class="evidence-item">
+                <div v-for="item in agentResult.available_campaigns" :key="item.evidence_id" class="evidence-item campaign-item">
+                  <input v-model="selectedCampaignIds" type="checkbox" :value="item.campaign_id" />
                   <span class="evidence-tag">MySQL</span>
                   <span>{{ item.campaign_name }}</span>
                   <small>{{ item.allowedReplyText }}</small>
+                </div>
+                <button class="regen-btn" @click="regenerateReply" :disabled="analyzing">使用选中活动重新生成</button>
+              </div>
+
+              <div v-if="agentResult.matched_products?.length" class="agent-section">
+                <strong>命中商品</strong>
+                <div v-for="item in agentResult.matched_products" :key="item.id" class="evidence-item">
+                  <span class="evidence-tag">MySQL</span>
+                  <span>{{ item.title }}</span>
+                  <small>库存 {{ item.metadata?.stock }} 件 · ¥{{ item.metadata?.price }}</small>
                 </div>
               </div>
 
@@ -366,6 +391,14 @@ function formatTime(t) { return t ? t.replace('T', ' ') : '' }
                   <span class="evidence-tag">{{ item.evidence_type }}</span>
                   <span>{{ item.title }}</span>
                   <small>{{ item.text }}</small>
+                </div>
+              </div>
+
+              <div v-if="agentResult.policy_guidance?.length" class="agent-section">
+                <strong>政策结论与待核实项</strong>
+                <div v-for="item in agentResult.policy_guidance" :key="item.evidence_id" class="evidence-item">
+                  <span>{{ item.known_rule }}</span>
+                  <small v-if="item.missing_checks?.length">仍需核实：{{ item.missing_checks.join('、') }}</small>
                 </div>
               </div>
 
@@ -470,6 +503,7 @@ function formatTime(t) { return t ? t.replace('T', ' ') : '' }
 .trace-item { background: #ecf5ff; color: #409eff; padding: 3px 6px; border-radius: 4px; }
 .evidence-item { display: grid; grid-template-columns: auto minmax(120px, auto) 1fr; align-items: start; gap: 6px; margin-top: 6px; }
 .evidence-item small { color: #999; }
+.campaign-item { grid-template-columns: auto auto minmax(120px, auto) 1fr; }
 .evidence-tag { background: #f0f9eb; color: #67c23a; padding: 2px 5px; border-radius: 3px; }
 .risk-section { color: #e6a23c; line-height: 1.6; }
 .action-item { margin-top: 6px; padding-left: 12px; position: relative; }

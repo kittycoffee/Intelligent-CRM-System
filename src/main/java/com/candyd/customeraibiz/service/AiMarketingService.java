@@ -68,8 +68,8 @@ public class AiMarketingService {
             sb.append("规则2：千万不要解释！千万不要带标点符号！只能输出这一个词语！\n");
             sb.append("客户留言：").append(userMessage);
 
-            // 调用 DeepSeek
-            String keyword = callDeepSeekApi(sb.toString());
+            // 调用 Qwen
+            String keyword = callQwenApi(sb.toString());
 
             // 清理 AI 可能带上的多余换行或标点
             if (keyword != null) {
@@ -176,7 +176,7 @@ public class AiMarketingService {
             sb.append("3. 策略：如果客户咨询推荐，请务必从【店铺现货清单】中选择最合适的一款进行介绍，并结合其卖点。\n");
 
             // 3. 调用 AI
-            String result = callDeepSeekApi(sb.toString());
+            String result = callQwenApi(sb.toString());
 
             // 4. 存入数据库
             if (result != null) {
@@ -256,7 +256,7 @@ public class AiMarketingService {
                 String finalPrompt = promptBuilder.toString();
 
                 // 4. 调用 AI
-                String advice = callDeepSeekApi(finalPrompt);
+                String advice = callQwenApi(finalPrompt);
 
                 // 5. 保存结果
                 if (advice != null) {
@@ -328,7 +328,7 @@ public class AiMarketingService {
             sb.append("4. 纯文本格式，不要Markdown。");
 
             // 4. 调用 AI
-            String insight = callDeepSeekApi(sb.toString()); // 现在 sb 找到了，这行就不会红了
+            String insight = callQwenApi(sb.toString()); // 现在 sb 找到了，这行就不会红了
 
             if (insight != null) {
                 // ✅ 成功后，更新缓存
@@ -347,7 +347,7 @@ public class AiMarketingService {
 
 
     //调用API
-    private String callDeepSeekApi(String userPrompt) {
+    private String callQwenApi(String userPrompt) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set("Authorization", "Bearer " + apiKey);
@@ -359,6 +359,7 @@ public class AiMarketingService {
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("model", model);
         requestBody.put("messages", new Object[]{message});
+        requestBody.put("enable_thinking", false);
         requestBody.put("temperature", 0.5); // 稍微调低温度，让分析更理性
 
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);

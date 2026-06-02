@@ -30,20 +30,23 @@ def semantic_scores(query: str, docs: list[dict[str, Any]]) -> tuple[dict[str, f
         from qdrant_client import models
 
         client = _client()
-        if not client.collection_exists(COLLECTION_NAME):
-            return {}, "lexical-fallback:not-indexed"
-        model_name = os.getenv("QDRANT_EMBEDDING_MODEL", DEFAULT_MODEL)
-        points = client.query_points(
-            collection_name=COLLECTION_NAME,
-            query=models.Document(text=query, model=model_name),
-            limit=max(10, len(docs)),
-            with_payload=True,
-        ).points
-        return {
-            str(point.payload["doc_id"]): round(float(point.score), 4)
-            for point in points
-            if point.payload and point.payload.get("doc_id") and float(point.score) >= 0.38
-        }, "hybrid:qdrant"
+        try:
+            if not client.collection_exists(COLLECTION_NAME):
+                return {}, "lexical-fallback:not-indexed"
+            model_name = os.getenv("QDRANT_EMBEDDING_MODEL", DEFAULT_MODEL)
+            points = client.query_points(
+                collection_name=COLLECTION_NAME,
+                query=models.Document(text=query, model=model_name),
+                limit=max(10, len(docs)),
+                with_payload=True,
+            ).points
+            return {
+                str(point.payload["doc_id"]): round(float(point.score), 4)
+                for point in points
+                if point.payload and point.payload.get("doc_id") and float(point.score) >= 0.38
+            }, "hybrid:qdrant"
+        finally:
+            client.close()
     except Exception as exc:
         return {}, f"lexical-fallback:{type(exc).__name__}"
 
@@ -81,4 +84,3 @@ def rebuild_collection(docs: list[dict[str, Any]]) -> int:
         ids=list(range(1, len(docs) + 1)),
     )
     return len(docs)
-

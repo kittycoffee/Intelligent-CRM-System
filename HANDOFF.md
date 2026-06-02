@@ -1,5 +1,27 @@
 # AI 客户运营工单 Agent 系统阶段交接
 
+## 2026-06-02 本轮续作进展
+
+当前工作区已完成但尚未提交：
+
+- DeepSeek 配置已统一替换为阿里云百炼 `qwen3.6-plus`，Python 新增统一 `QwenClient`。
+- Qwen 客户端已支持根目录 `.env`、JSON Mode、`enable_thinking=false`、超时、一次重试和模板降级。
+- 工单回复已区分候选活动与客服选中活动，未勾选活动不会进入对客话术。
+- 已补充订单履约字段、工单关联订单、POST 分析接口、活动勾选重生成和政策指导展示。
+- 手册检索已按意图过滤到最多 `3` 条，并增加结构化政策摘要、待核实项和禁止承诺。
+- Qwen 输出新增 grounding 校验；未选活动泄漏、越权承诺或内部动作混入回复时会重写一次，再失败则模板降级。
+- 已补充选中活动必须写入回复并引用活动证据 ID 的校验；Windows 本地 FastAPI 默认地址统一为 `127.0.0.1`。
+- 离线评测扩展到 `34` 条，当前 `34/34 passed`。离线评测故意禁用真实 API Key，因此 `qwen_generation_success_rate=0.0`。
+
+仍需在重新启动服务前执行：
+
+```text
+migration_order_context.sql
+python -B ingest_handbook.py
+```
+
+重新启动 Spring Boot、FastAPI 和 Vue 后，再使用真实百炼 Key 做端到端 Qwen 验证。
+
 更新时间：2026-06-02  
 分支：`master`  
 远端：`origin/master`  
@@ -531,4 +553,3 @@ b1ea825 feat: add handbook documents and persistent hybrid retrieval
 3. 使用 Qwen JSON Mode 生成结构化回复。
 4. 保留模板，仅作为 Qwen 不可用时的降级路径。
 5. 用“游戏机咨询”“包装完整退货”“勾选活动后重新生成”三个场景做首轮验证。
-

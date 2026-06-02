@@ -4,6 +4,9 @@
     "type": "policy",
     "title": "七天无理由退货说明",
     "text": "符合条件的商品可在签收后七日内申请无理由退货。客服需要先核实订单、签收时间、商品状态、配件和包装完整性。部分影响二次销售的商品不适用。",
+    "customer_safe_summary": "商品在签收后七日内、包装和配件完整且不影响二次销售时，可以申请无理由退货。",
+    "required_checks": ["订单号", "签收时间", "商品状态", "包装和配件完整性"],
+    "forbidden_promises": ["未核验前不得承诺退款成功"],
     "intent_tags": ["after_sales"],
     "source_url": "https://help.jd.com/user/issue/327-988.html"
   },
@@ -28,6 +31,9 @@
     "type": "policy",
     "title": "发货延迟处理说明",
     "text": "遇到未发货或物流长时间未更新时，客服应先核实订单状态和物流节点，再向客户同步调查进度。不得在未查询前承诺具体送达时间。",
+    "customer_safe_summary": "我们会先核实订单状态和当前物流进度，再向您同步处理结果。",
+    "required_checks": ["订单号", "履约状态", "物流状态"],
+    "forbidden_promises": ["未查询前不得承诺具体送达时间", "不得虚构仓库原因"],
     "intent_tags": ["complaint", "after_sales"],
     "source_url": "https://help.jd.com/user/issue/108-385.html"
   },
@@ -44,6 +50,9 @@
     "type": "policy",
     "title": "退款到账周期说明",
     "text": "退款到账时间受支付渠道和银行处理进度影响。客服可以说明将核实退款状态，但不得承诺具体到账时间，也不得承诺赔偿金额。",
+    "customer_safe_summary": "退款到账时间会受到支付渠道和银行处理进度影响，因此暂时无法承诺具体时间。",
+    "required_checks": ["订单号", "支付渠道", "退款状态"],
+    "forbidden_promises": ["不得承诺具体到账时间", "不得承诺赔偿金额"],
     "intent_tags": ["after_sales", "complaint"],
     "source_url": "https://help.jd.com/user/issue/327-988.html"
   },
@@ -96,4 +105,3 @@
     "source_url": "internal-demo://product-consulting-faq"
   }
 ]
-

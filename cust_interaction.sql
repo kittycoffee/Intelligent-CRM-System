@@ -3,6 +3,7 @@ create table cust_interaction
     id                 bigint auto_increment comment '主键ID'
         primary key,
     cust_id            bigint                             not null comment '客户ID',
+    related_order_id   varchar(50)                        null comment '关联订单号',
     interaction_type   varchar(50)                        null comment '交互类型：投诉/咨询/回访',
     detected_intent    varchar(30)                        null comment 'AI 自动识别意图',
     intent_override    varchar(30)                        null comment '客服人工修正意图',

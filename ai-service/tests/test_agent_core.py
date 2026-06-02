@@ -1,7 +1,11 @@
+import os
 import unittest
+from unittest.mock import patch
 
 from agent_core import run_agent_workflow
 
+os.environ.setdefault("AI_RETRIEVAL_BACKEND", "lexical")
+os.environ["DASHSCOPE_API_KEY"] = ""
 
 BASE_PAYLOAD = {
     "interactionId": 1,
@@ -98,6 +102,78 @@ class AgentCoreTest(unittest.TestCase):
         payload["intentOverride"] = "after_sales"
         result = run_agent_workflow(payload)
         self.assertEqual(result.intent, "after_sales")
+
+    def test_unselected_campaign_does_not_leak_into_template_reply(self):
+        payload = dict(BASE_PAYLOAD)
+        payload["content"] = "我想买一款适合通勤的耳机，有没有推荐？"
+        result = run_agent_workflow(payload)
+        self.assertTrue(result.available_campaigns)
+        self.assertFalse(result.selected_campaigns)
+        self.assertNotIn("老客复购专享活动", result.reply_draft)
+
+    def test_selected_campaign_is_included_in_template_reply(self):
+        payload = dict(BASE_PAYLOAD)
+        payload["content"] = "我想买一款适合通勤的耳机，有没有推荐？"
+        payload["selectedCampaignIds"] = [3]
+        result = run_agent_workflow(payload)
+        self.assertTrue(result.selected_campaigns)
+        self.assertIn("老客复购专享活动", result.reply_draft)
+
+    def test_game_console_consulting_rule(self):
+        payload = dict(BASE_PAYLOAD)
+        payload["content"] = "最近想入手一台游戏机，是买 Switch 还是别的？有现货吗？"
+        result = run_agent_workflow(payload)
+        self.assertEqual(result.intent, "product_consulting")
+
+    def test_return_policy_guidance_is_customer_safe(self):
+        payload = dict(BASE_PAYLOAD)
+        payload["content"] = "商品包装还在，可以申请退货吗？"
+        result = run_agent_workflow(payload)
+        self.assertTrue(result.policy_guidance)
+        self.assertIn("签收后七日内", result.reply_draft)
+
+    def test_unselected_campaign_from_qwen_triggers_rewrite(self):
+        payload = dict(BASE_PAYLOAD)
+        payload["content"] = "我想买一款适合通勤的耳机，有没有推荐？"
+
+        class FakeQwenClient:
+            calls = 0
+
+            def generate_json(self, system_prompt, user_prompt):
+                self.__class__.calls += 1
+                if self.__class__.calls == 1:
+                    return {"reply_draft": "可以参加老客复购专享券。", "internal_actions": [], "used_evidence_ids": []}
+                return {"reply_draft": "目前有通勤降噪耳机可供选择。", "internal_actions": [], "used_evidence_ids": ["product_1"]}
+
+        with patch("agent_core.QwenClient", FakeQwenClient):
+            result = run_agent_workflow(payload)
+        self.assertEqual(result.generation_backend, "qwen_rewrite")
+        self.assertEqual(result.rewrite_count, 1)
+        self.assertNotIn("老客复购专享券", result.reply_draft)
+
+    def test_selected_campaign_omission_from_qwen_triggers_rewrite(self):
+        payload = dict(BASE_PAYLOAD)
+        payload["content"] = "我想买一款适合通勤的耳机，有没有推荐？"
+        payload["selectedCampaignIds"] = [3]
+
+        class FakeQwenClient:
+            calls = 0
+
+            def generate_json(self, system_prompt, user_prompt):
+                self.__class__.calls += 1
+                if self.__class__.calls == 1:
+                    return {"reply_draft": "目前有通勤降噪耳机可供选择。", "internal_actions": [], "used_evidence_ids": ["product_1"]}
+                return {
+                    "reply_draft": "目前有通勤降噪耳机可供选择。您当前可参与老客复购专享活动，具体优惠请以结算页面展示为准。",
+                    "internal_actions": [],
+                    "used_evidence_ids": ["product_1", "campaign_3"],
+                }
+
+        with patch("agent_core.QwenClient", FakeQwenClient):
+            result = run_agent_workflow(payload)
+        self.assertEqual(result.generation_backend, "qwen_rewrite")
+        self.assertEqual(result.rewrite_count, 1)
+        self.assertIn("老客复购专享活动", result.reply_draft)
 
 
 if __name__ == "__main__":

@@ -35,6 +35,7 @@ __pycache__/
 *.py[cod]
 *.log
 ai-service/data/qdrant/
+docs/resume-project-description.md
 
 ### VS Code ###
 .vscode/

@@ -27,9 +27,9 @@ MySQL 是结构化事实的唯一权威来源。Qdrant 只补充检索售后手�
 4. `Handbook Retriever`：关键词检索优先，Qdrant 中文语义检索补充。
 5. `Reply Planner`：生成仅供客服查看的内部动作。
 6. `Risk Checker`：检查虚构商品、无依据优惠和越权承诺。
-7. `Final Composer`：生成客户回复草稿、证据充分度和执行轨迹。
+7. `Final Composer`：使用 Qwen JSON Mode 整合证据；不可用时回退到场景模板。
 
-前端允许客服人工修正意图并重新生成。AI 不直接发券、不执行退款、不承诺赔偿。
+前端允许客服人工修正意图、关联订单、勾选活动并重新生成。候选活动默认只供内部查看，只有客服选中的活动才允许进入客户回复。AI 不直接发券、不执行退款、不承诺赔偿。
 
 ## Customer Strategy
 
@@ -48,12 +48,22 @@ MySQL 是结构化事实的唯一权威来源。Qdrant 只补充检索售后手�
 
 ```text
 migration_agent_strategy.sql
+migration_order_context.sql
 promotion_campaign.sql
 service_entitlement.sql
 demo_seed_agent.sql
 ```
 
 ### 2. AI service
+
+在根目录 `.env` 中配置阿里云百炼：
+
+```properties
+DASHSCOPE_API_KEY=your_api_key
+QWEN_API_URL=https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
+QWEN_MODEL=qwen3.6-plus
+QWEN_API_TIMEOUT_MS=30000
+```
 
 ```bash
 cd ai-service
@@ -63,6 +73,7 @@ uvicorn app:app --reload --port 8090
 ```
 
 默认中文 Embedding 模型为 `BAAI/bge-small-zh-v1.5`。Qdrant 使用本地持久化目录；未完成导入或不可用时，系统自动回退到关键词检索。
+回复生成使用 Qwen JSON Mode；Qwen 不可用或结构化输出无效时，系统自动回退到场景模板，并返回 `generation_backend=template_fallback`。
 
 ### 3. CRM backend and frontend
 
@@ -90,6 +101,13 @@ grounded_output_rate
 unauthorized_commitment_count
 json_schema_pass_rate
 fallback_success_rate
+direct_answer_rate
+policy_usage_rate
+selected_campaign_inclusion_rate
+unselected_campaign_leak_count
+irrelevant_evidence_count
+qwen_generation_success_rate
+rewrite_trigger_count
 failed_cases
 ```
 
@@ -101,4 +119,3 @@ failed_cases
 - 人工复核仍是工单流程的一部分。
 - 当前知识库规模较小，Qdrant 用于展示可扩展的语义检索能力，而不是性能刚需。
 - 生产环境应使用独立 Qdrant 服务，并补充真实匿名化工单评测集。
-
