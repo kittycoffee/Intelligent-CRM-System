@@ -20,6 +20,8 @@ public class CustInteraction {
     private Long custId; // 关联哪个客户
 
     private String interactionType; // 类型：电话、邮件、投诉、咨询
+    private String detectedIntent;
+    private String intentOverride;
 
     private String content; // 核心内容：比如“客户抱怨价格太贵”
 
@@ -30,4 +32,6 @@ public class CustInteraction {
     private String handleResult;    // 处理结果/人工回复
 
     private String aiSuggestedReply;
+    private String agentResultJson;
+    private String evidenceSufficiency;
 }

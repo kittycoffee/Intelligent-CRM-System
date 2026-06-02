@@ -16,5 +16,7 @@ public class CustRfmSnapshot {
     private Integer fScore;
     private Integer mScore;
     private String customerLevel; // 最终等级，如：重要价值客户
+    private String valueTier; // 演示规则：high / normal
+    private String lifecycleRisk; // active / silent / churn_risk
     private LocalDate snapshotDate; // 快照日期
 }

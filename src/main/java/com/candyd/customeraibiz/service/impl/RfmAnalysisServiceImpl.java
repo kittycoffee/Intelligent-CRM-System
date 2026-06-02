@@ -1,9 +1,11 @@
 package com.candyd.customeraibiz.service.impl;
 
 import com.candyd.customeraibiz.entity.CustRfmSnapshot;
+import com.candyd.customeraibiz.entity.CustInteraction;
 import com.candyd.customeraibiz.entity.OrderInfo;
 import com.candyd.customeraibiz.entity.RfmRule;
 import com.candyd.customeraibiz.mapper.CustRfmSnapshotMapper;
+import com.candyd.customeraibiz.mapper.CustInteractionMapper;
 import com.candyd.customeraibiz.mapper.OrderInfoMapper;
 import com.candyd.customeraibiz.mapper.RfmRuleMapper;
 import com.candyd.customeraibiz.service.RfmAnalysisService;
@@ -35,6 +37,9 @@ public class RfmAnalysisServiceImpl implements RfmAnalysisService {
 
     @Autowired
     private RfmRuleMapper rfmRuleMapper; // 注入规则搬运工
+
+    @Autowired
+    private CustInteractionMapper interactionMapper;
 
     @Override
     // 计算逻辑
@@ -93,6 +98,8 @@ public class RfmAnalysisServiceImpl implements RfmAnalysisService {
             snapshot.setFScore(fScore);
             snapshot.setMScore(mScore);
             snapshot.setCustomerLevel(level);
+            snapshot.setValueTier(calculateValueTier(fValue, mValue));
+            snapshot.setLifecycleRisk(calculateLifecycleRisk(custId, rValue));
             snapshot.setSnapshotDate(LocalDate.now());
 
             snapshotMapper.insert(snapshot); // 执行保存
@@ -168,6 +175,8 @@ public void analyzeCustomer(Long custId) {
     snapshot.setFScore(fScore);
     snapshot.setMScore(mScore);
     snapshot.setCustomerLevel(level);
+    snapshot.setValueTier(calculateValueTier(fValue, mValue));
+    snapshot.setLifecycleRisk(calculateLifecycleRisk(custId, rValue));
     snapshot.setSnapshotDate(LocalDate.now());
     snapshotMapper.insert(snapshot);
 }
@@ -183,5 +192,31 @@ public void analyzeCustomer(Long custId) {
                 .map(RfmRule::getScore)
                 .findFirst()
                 .orElse(1); // 如果没匹配到，默认给 1 分（兜底逻辑）
+    }
+
+    /**
+     * 面试演示用的简化客户策略规则。阈值集中在这里，避免把它描述成完整商业模型。
+     */
+    private String calculateValueTier(int orderCount, BigDecimal totalAmount) {
+        return orderCount >= 5 || totalAmount.compareTo(new BigDecimal("5000")) >= 0
+                ? "high" : "normal";
+    }
+
+    private String calculateLifecycleRisk(Long custId, long daysSinceLastOrder) {
+        LocalDateTime negativeWindowStart = LocalDateTime.now().minusDays(30);
+        long recentNegativeCount = interactionMapper.selectCount(
+                new QueryWrapper<CustInteraction>()
+                        .eq("cust_id", custId)
+                        .ge("create_time", negativeWindowStart)
+                        .and(wrapper -> wrapper
+                                .eq("interaction_type", "投诉")
+                                .or().like("content", "退款")
+                                .or().like("content", "不满")
+                                .or().like("content", "太差"))
+        );
+        if (daysSinceLastOrder > 60 && recentNegativeCount > 0) {
+            return "churn_risk";
+        }
+        return daysSinceLastOrder > 30 ? "silent" : "active";
     }
 }
