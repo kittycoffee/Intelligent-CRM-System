@@ -12,11 +12,14 @@ class WorkOrderRequest(BaseModel):
     interactionId: int | None = None
     content: str
     interactionType: str | None = None
+    intentOverride: str | None = None
     customer: dict[str, Any] = Field(default_factory=dict)
     rfm: dict[str, Any] = Field(default_factory=dict)
     products: list[dict[str, Any]] = Field(default_factory=list)
     orders: list[dict[str, Any]] = Field(default_factory=list)
     history: list[dict[str, Any]] = Field(default_factory=list)
+    campaigns: list[dict[str, Any]] = Field(default_factory=list)
+    entitlements: list[dict[str, Any]] = Field(default_factory=list)
 
 
 app = FastAPI(title="CRM AI Customer Operations Agent", version="1.0.0")
@@ -31,4 +34,3 @@ def health() -> dict[str, str]:
 def agent_work_order(request: WorkOrderRequest) -> dict[str, Any]:
     result = run_agent_workflow(request.model_dump())
     return result.__dict__
-

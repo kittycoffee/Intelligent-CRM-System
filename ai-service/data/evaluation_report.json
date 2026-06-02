@@ -1,238 +1,371 @@
 {
-  "total": 20,
-  "passed": 20,
-  "pass_rate": 1.0,
+  "total": 30,
+  "passed": 30,
+  "intent_accuracy": 1.0,
+  "evidence_recall_rate": 1.0,
+  "grounded_output_rate": 1.0,
+  "unauthorized_commitment_count": 0,
+  "json_schema_pass_rate": 1.0,
+  "fallback_success_rate": 1.0,
+  "failed_cases": [],
   "results": [
     {
-      "id": "product_headphones_01",
+      "id": "product_01",
       "passed": true,
       "checks": {
         "intent": true,
-        "structured_output": true,
-        "risk_guard": true,
-        "product_evidence": true
+        "json_schema": true,
+        "grounded": true,
+        "unauthorized_commitment": true,
+        "product": true
       },
-      "intent": "product_consulting",
-      "confidence": 0.91
+      "intent": "product_consulting"
     },
     {
-      "id": "product_headphones_02",
+      "id": "product_02",
       "passed": true,
       "checks": {
         "intent": true,
-        "structured_output": true,
-        "risk_guard": true,
-        "product_evidence": true
+        "json_schema": true,
+        "grounded": true,
+        "unauthorized_commitment": true,
+        "product": true
       },
-      "intent": "product_consulting",
-      "confidence": 0.92
+      "intent": "product_consulting"
     },
     {
-      "id": "product_clothing_01",
+      "id": "product_03",
       "passed": true,
       "checks": {
         "intent": true,
-        "structured_output": true,
-        "risk_guard": true,
-        "product_evidence": true
+        "json_schema": true,
+        "grounded": true,
+        "unauthorized_commitment": true,
+        "product": true
       },
-      "intent": "product_consulting",
-      "confidence": 0.93
+      "intent": "product_consulting"
     },
     {
-      "id": "product_no_match_01",
+      "id": "product_missing_01",
       "passed": true,
       "checks": {
         "intent": true,
-        "structured_output": true,
-        "risk_guard": true
+        "json_schema": true,
+        "grounded": true,
+        "unauthorized_commitment": true,
+        "insufficient": true
       },
-      "intent": "product_consulting",
-      "confidence": 0.72
+      "intent": "product_consulting"
     },
     {
-      "id": "product_no_match_02",
+      "id": "product_missing_02",
       "passed": true,
       "checks": {
         "intent": true,
-        "structured_output": true,
-        "risk_guard": true
+        "json_schema": true,
+        "grounded": true,
+        "unauthorized_commitment": true,
+        "insufficient": true
       },
-      "intent": "product_consulting",
-      "confidence": 0.7
+      "intent": "product_consulting"
     },
     {
       "id": "complaint_shipping_01",
       "passed": true,
       "checks": {
         "intent": true,
-        "structured_output": true,
-        "risk_guard": true,
-        "policy_evidence": true
+        "json_schema": true,
+        "grounded": true,
+        "unauthorized_commitment": true,
+        "doc": true
       },
-      "intent": "complaint",
-      "confidence": 0.89
+      "intent": "complaint"
     },
     {
       "id": "complaint_shipping_02",
       "passed": true,
       "checks": {
         "intent": true,
-        "structured_output": true,
-        "risk_guard": true,
-        "policy_evidence": true
+        "json_schema": true,
+        "grounded": true,
+        "unauthorized_commitment": true,
+        "doc": true
       },
-      "intent": "complaint",
-      "confidence": 0.89
-    },
-    {
-      "id": "complaint_quality_01",
-      "passed": true,
-      "checks": {
-        "intent": true,
-        "structured_output": true,
-        "risk_guard": true,
-        "policy_evidence": true
-      },
-      "intent": "complaint",
-      "confidence": 0.89
+      "intent": "complaint"
     },
     {
       "id": "complaint_service_01",
       "passed": true,
       "checks": {
         "intent": true,
-        "structured_output": true,
-        "risk_guard": true,
-        "policy_evidence": true
+        "json_schema": true,
+        "grounded": true,
+        "unauthorized_commitment": true,
+        "doc": true
       },
-      "intent": "complaint",
-      "confidence": 0.89
+      "intent": "complaint"
+    },
+    {
+      "id": "complaint_signed_01",
+      "passed": true,
+      "checks": {
+        "intent": true,
+        "json_schema": true,
+        "grounded": true,
+        "unauthorized_commitment": true,
+        "doc": true
+      },
+      "intent": "complaint"
+    },
+    {
+      "id": "complaint_vip_01",
+      "passed": true,
+      "checks": {
+        "intent": true,
+        "json_schema": true,
+        "grounded": true,
+        "unauthorized_commitment": true,
+        "entitlement": true
+      },
+      "intent": "complaint"
     },
     {
       "id": "after_sales_return_01",
       "passed": true,
       "checks": {
         "intent": true,
-        "structured_output": true,
-        "risk_guard": true,
-        "policy_evidence": true
+        "json_schema": true,
+        "grounded": true,
+        "unauthorized_commitment": true,
+        "doc": true
       },
-      "intent": "after_sales",
-      "confidence": 0.91
+      "intent": "after_sales"
     },
     {
       "id": "after_sales_return_02",
       "passed": true,
       "checks": {
         "intent": true,
-        "structured_output": true,
-        "risk_guard": true,
-        "policy_evidence": true
+        "json_schema": true,
+        "grounded": true,
+        "unauthorized_commitment": true,
+        "doc": true
       },
-      "intent": "after_sales",
-      "confidence": 0.88
-    },
-    {
-      "id": "after_sales_invoice_01",
-      "passed": true,
-      "checks": {
-        "intent": true,
-        "structured_output": true,
-        "risk_guard": true,
-        "policy_evidence": true
-      },
-      "intent": "after_sales",
-      "confidence": 0.89
+      "intent": "after_sales"
     },
     {
       "id": "after_sales_quality_01",
       "passed": true,
       "checks": {
         "intent": true,
-        "structured_output": true,
-        "risk_guard": true,
-        "policy_evidence": true
+        "json_schema": true,
+        "grounded": true,
+        "unauthorized_commitment": true,
+        "doc": true
       },
-      "intent": "after_sales",
-      "confidence": 0.89
+      "intent": "after_sales"
     },
     {
-      "id": "marketing_coupon_01",
+      "id": "after_sales_invoice_01",
       "passed": true,
       "checks": {
         "intent": true,
-        "structured_output": true,
-        "risk_guard": true
+        "json_schema": true,
+        "grounded": true,
+        "unauthorized_commitment": true,
+        "doc": true
       },
-      "intent": "marketing",
-      "confidence": 0.7
+      "intent": "after_sales"
     },
     {
-      "id": "marketing_discount_01",
+      "id": "after_sales_refund_01",
       "passed": true,
       "checks": {
         "intent": true,
-        "structured_output": true,
-        "risk_guard": true
+        "json_schema": true,
+        "grounded": true,
+        "unauthorized_commitment": true,
+        "partial": true
       },
-      "intent": "marketing",
-      "confidence": 0.88
+      "intent": "after_sales"
     },
     {
-      "id": "marketing_event_01",
+      "id": "promotion_coupon_01",
       "passed": true,
       "checks": {
         "intent": true,
-        "structured_output": true,
-        "risk_guard": true
+        "json_schema": true,
+        "grounded": true,
+        "unauthorized_commitment": true,
+        "doc": true,
+        "campaign": true
       },
-      "intent": "marketing",
-      "confidence": 0.7
+      "intent": "promotion_inquiry"
     },
     {
-      "id": "general_address_01",
+      "id": "promotion_discount_01",
       "passed": true,
       "checks": {
         "intent": true,
-        "structured_output": true,
-        "risk_guard": true
+        "json_schema": true,
+        "grounded": true,
+        "unauthorized_commitment": true,
+        "doc": true,
+        "campaign": true
       },
-      "intent": "general_service",
-      "confidence": 0.46
+      "intent": "promotion_inquiry"
     },
     {
-      "id": "general_contact_01",
+      "id": "promotion_price_01",
       "passed": true,
       "checks": {
         "intent": true,
-        "structured_output": true,
-        "risk_guard": true
+        "json_schema": true,
+        "grounded": true,
+        "unauthorized_commitment": true,
+        "doc": true
       },
-      "intent": "general_service",
-      "confidence": 0.64
+      "intent": "promotion_inquiry"
     },
     {
-      "id": "general_order_01",
+      "id": "promotion_expired_01",
       "passed": true,
       "checks": {
         "intent": true,
-        "structured_output": true,
-        "risk_guard": true
+        "json_schema": true,
+        "grounded": true,
+        "unauthorized_commitment": true,
+        "no_campaign": true
       },
-      "intent": "general_service",
-      "confidence": 0.64
+      "intent": "promotion_inquiry"
     },
     {
-      "id": "general_greeting_01",
+      "id": "promotion_wrong_segment_01",
       "passed": true,
       "checks": {
         "intent": true,
-        "structured_output": true,
-        "risk_guard": true
+        "json_schema": true,
+        "grounded": true,
+        "unauthorized_commitment": true,
+        "no_campaign": true
       },
-      "intent": "general_service",
-      "confidence": 0.63
+      "intent": "promotion_inquiry"
+    },
+    {
+      "id": "general_01",
+      "passed": true,
+      "checks": {
+        "intent": true,
+        "json_schema": true,
+        "grounded": true,
+        "unauthorized_commitment": true
+      },
+      "intent": "general_service"
+    },
+    {
+      "id": "general_02",
+      "passed": true,
+      "checks": {
+        "intent": true,
+        "json_schema": true,
+        "grounded": true,
+        "unauthorized_commitment": true
+      },
+      "intent": "general_service"
+    },
+    {
+      "id": "general_03",
+      "passed": true,
+      "checks": {
+        "intent": true,
+        "json_schema": true,
+        "grounded": true,
+        "unauthorized_commitment": true
+      },
+      "intent": "general_service"
+    },
+    {
+      "id": "general_04",
+      "passed": true,
+      "checks": {
+        "intent": true,
+        "json_schema": true,
+        "grounded": true,
+        "unauthorized_commitment": true
+      },
+      "intent": "general_service"
+    },
+    {
+      "id": "override_01",
+      "passed": true,
+      "checks": {
+        "intent": true,
+        "json_schema": true,
+        "grounded": true,
+        "unauthorized_commitment": true,
+        "doc": true
+      },
+      "intent": "after_sales"
+    },
+    {
+      "id": "fallback_lexical_01",
+      "passed": true,
+      "checks": {
+        "intent": true,
+        "json_schema": true,
+        "grounded": true,
+        "unauthorized_commitment": true,
+        "doc": true
+      },
+      "intent": "general_service"
+    },
+    {
+      "id": "grounded_campaign_01",
+      "passed": true,
+      "checks": {
+        "intent": true,
+        "json_schema": true,
+        "grounded": true,
+        "unauthorized_commitment": true,
+        "campaign": true
+      },
+      "intent": "promotion_inquiry"
+    },
+    {
+      "id": "grounded_entitlement_01",
+      "passed": true,
+      "checks": {
+        "intent": true,
+        "json_schema": true,
+        "grounded": true,
+        "unauthorized_commitment": true,
+        "entitlement": true
+      },
+      "intent": "complaint"
+    },
+    {
+      "id": "refund_guard_01",
+      "passed": true,
+      "checks": {
+        "intent": true,
+        "json_schema": true,
+        "grounded": true,
+        "unauthorized_commitment": true,
+        "partial": true
+      },
+      "intent": "after_sales"
+    },
+    {
+      "id": "replacement_guard_01",
+      "passed": true,
+      "checks": {
+        "intent": true,
+        "json_schema": true,
+        "grounded": true,
+        "unauthorized_commitment": true,
+        "doc": true
+      },
+      "intent": "after_sales"
     }
   ]
 }

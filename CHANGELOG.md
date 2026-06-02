@@ -11,6 +11,8 @@ All notable project changes are documented here.
 - Added demo campaigns and service entitlements for differentiated customer operations scenarios.
 - Added anonymized handbook chunks for returns, logistics, refunds, complaints, coupons, and product FAQ.
 - Added an explicit Qdrant handbook ingestion script and persistent local collection support.
+- Added an evidence-bound seven-node Agent workflow with separate customer strategy, internal actions, reply drafts, risk flags, and evidence sufficiency.
+- Expanded the offline regression suite to 30 grounded customer-operations scenarios and split the evaluation report into explainable metrics.
 - Added a FastAPI AI customer-operations service with a six-node work-order workflow.
 - Added optional LangGraph orchestration with a sequential fallback for minimal local tests.
 - Added optional Qdrant local in-memory retrieval with FastEmbed and a lightweight lexical default.
@@ -23,6 +25,7 @@ All notable project changes are documented here.
 
 - Added explicit HTTP timeouts for DeepSeek API calls.
 - Changed retrieval to keyword-first hybrid search with optional Qdrant semantic supplementation.
+- Replaced heuristic confidence percentages with explainable evidence sufficiency levels.
 - Moved database credentials to environment-variable overrides.
 - Marked database-mutating Java integration tests as manual tests.
 - Rewrote the README around verifiable AI workflow behavior and engineering boundaries.
