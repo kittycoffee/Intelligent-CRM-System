@@ -109,7 +109,23 @@ def build_customer_profile(payload: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def _is_active_campaign(item: dict[str, Any], strategy: dict[str, str]) -> bool:
+def _campaign_matches_context(item: dict[str, Any], payload: dict[str, Any], intent: str) -> bool:
+    category = item.get("productCategory") or item.get("product_category")
+    if not category:
+        return True
+    if intent not in {"product_consulting", "promotion_inquiry"}:
+        return False
+    content = payload.get("content") or ""
+    if category in content:
+        return True
+    return intent == "product_consulting" and any(
+        (product.get("category") or "") == category
+        and _score(content, f"{product.get('productName') or ''} {product.get('features') or ''} {category}") >= 0.04
+        for product in payload.get("products") or []
+    )
+
+
+def _is_active_campaign(item: dict[str, Any], payload: dict[str, Any], strategy: dict[str, str], intent: str) -> bool:
     if int(item.get("status", 1)) != 1:
         return False
     now = datetime.now(timezone.utc).replace(tzinfo=None)
@@ -124,13 +140,14 @@ def _is_active_campaign(item: dict[str, Any], strategy: dict[str, str]) -> bool:
     return (
         item.get("targetValueTier", item.get("target_value_tier", "all")) in {"all", strategy["value_tier"]}
         and item.get("targetLifecycleRisk", item.get("target_lifecycle_risk", "all")) in {"all", strategy["lifecycle_risk"]}
+        and _campaign_matches_context(item, payload, intent)
     )
 
 
 def resolve_structured_facts(payload: dict[str, Any], strategy: dict[str, str], intent: str) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     campaigns = []
     for item in payload.get("campaigns") or []:
-        if _is_active_campaign(item, strategy):
+        if _is_active_campaign(item, payload, strategy, intent):
             campaign = dict(item)
             campaign["campaign_id"] = campaign.get("id") or campaign.get("campaignId")
             campaign["campaign_name"] = campaign.get("campaignName") or campaign.get("campaign_name")
@@ -400,4 +417,3 @@ def run_agent_workflow(payload: dict[str, Any]) -> AgentResult:
         orchestration_backend=orchestration_backend,
         retrieval_backend=state["retrieval_backend"],
     )
-

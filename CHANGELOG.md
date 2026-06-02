@@ -18,6 +18,7 @@ All notable project changes are documented here.
 - Added work-order UI sections for customer strategy, eligible campaigns, service entitlements, handbook evidence, internal actions, risk flags, and staff intent correction.
 - Updated project and AI-service documentation with hybrid retrieval, evidence boundaries, migrations, ingestion steps, evaluation metrics, and resume-ready wording.
 - Added SOCKS proxy support for FastEmbed model downloads and ignored local persisted Qdrant data.
+- Restricted category-specific campaigns to matching product or promotion contexts so unrelated offers do not leak into complaint replies.
 - Added a FastAPI AI customer-operations service with a six-node work-order workflow.
 - Added optional LangGraph orchestration with a sequential fallback for minimal local tests.
 - Added optional Qdrant local in-memory retrieval with FastEmbed and a lightweight lexical default.

@@ -82,6 +82,7 @@ class AgentCoreTest(unittest.TestCase):
         self.assertEqual(result.customer_strategy["value_tier"], "high")
         self.assertIn("优先", result.reply_draft)
         self.assertNotIn("一定赔偿", result.reply_draft)
+        self.assertNotIn("数码焕新活动", [item["campaign_name"] for item in result.available_campaigns])
 
     def test_refund_is_partial_and_never_promises_timeline(self):
         payload = dict(BASE_PAYLOAD)
@@ -101,4 +102,3 @@ class AgentCoreTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-
