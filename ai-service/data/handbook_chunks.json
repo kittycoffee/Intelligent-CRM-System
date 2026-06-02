@@ -1,0 +1,99 @@
+[
+  {
+    "id": "return_policy_v1_01",
+    "type": "policy",
+    "title": "七天无理由退货说明",
+    "text": "符合条件的商品可在签收后七日内申请无理由退货。客服需要先核实订单、签收时间、商品状态、配件和包装完整性。部分影响二次销售的商品不适用。",
+    "intent_tags": ["after_sales"],
+    "source_url": "https://help.jd.com/user/issue/327-988.html"
+  },
+  {
+    "id": "return_policy_v1_02",
+    "type": "policy",
+    "title": "七天无理由退货说明",
+    "text": "无理由退货并不等于无需核验。客服不得在未检查商品状态前直接承诺退款，应引导客户提交订单号和商品现状。",
+    "intent_tags": ["after_sales", "complaint"],
+    "source_url": "https://help.jd.com/user/issue/327-988.html"
+  },
+  {
+    "id": "quality_exchange_v1_01",
+    "type": "policy",
+    "title": "商品质量问题与换货规则",
+    "text": "客户反馈破损、故障或质量问题时，应记录订单号、问题描述和必要凭证。符合规则的商品可进入换货核验流程，但 AI 不得直接承诺换货结果。",
+    "intent_tags": ["after_sales", "complaint"],
+    "source_url": "https://help.jd.com/user/issue/325-915.html"
+  },
+  {
+    "id": "shipping_delay_v1_01",
+    "type": "policy",
+    "title": "发货延迟处理说明",
+    "text": "遇到未发货或物流长时间未更新时，客服应先核实订单状态和物流节点，再向客户同步调查进度。不得在未查询前承诺具体送达时间。",
+    "intent_tags": ["complaint", "after_sales"],
+    "source_url": "https://help.jd.com/user/issue/108-385.html"
+  },
+  {
+    "id": "signed_missing_v1_01",
+    "type": "policy",
+    "title": "物流显示签收但未收到",
+    "text": "物流显示签收但客户未收到商品时，应建议客户核实代收点和收件信息，同时由客服发起物流核查。未完成核查前不得判断责任归属。",
+    "intent_tags": ["complaint", "after_sales"],
+    "source_url": "https://help.jd.com/user/issue/108-385.html"
+  },
+  {
+    "id": "refund_timeline_v1_01",
+    "type": "policy",
+    "title": "退款到账周期说明",
+    "text": "退款到账时间受支付渠道和银行处理进度影响。客服可以说明将核实退款状态，但不得承诺具体到账时间，也不得承诺赔偿金额。",
+    "intent_tags": ["after_sales", "complaint"],
+    "source_url": "https://help.jd.com/user/issue/327-988.html"
+  },
+  {
+    "id": "complaint_escalation_v1_01",
+    "type": "manual",
+    "title": "投诉升级处理流程",
+    "text": "投诉工单应先表达歉意、记录诉求、核实订单和历史处理记录。高优先级工单可进入优先跟进队列；补偿、退款和赔偿均需人工确认。",
+    "intent_tags": ["complaint"],
+    "source_url": "internal-demo://complaint-escalation"
+  },
+  {
+    "id": "vip_boundary_v1_01",
+    "type": "manual",
+    "title": "高价值客户售后服务边界",
+    "text": "高价值客户可承诺优先跟进和已配置的响应时限。涉及换货、补偿券、退款或赔偿时，仍需核实订单和资格，不得越权承诺。",
+    "intent_tags": ["complaint", "after_sales"],
+    "source_url": "internal-demo://vip-service-boundary"
+  },
+  {
+    "id": "coupon_rules_v1_01",
+    "type": "policy",
+    "title": "优惠券通用使用限制与活动规则说明",
+    "text": "优惠券是否可用以活动有效期、适用客户、商品范围、订单门槛和结算页展示为准。具体活动资格和优惠金额必须查询业务数据库。",
+    "intent_tags": ["promotion_inquiry", "product_consulting"],
+    "source_url": "https://help.jd.com/user/issue/169-1077.html"
+  },
+  {
+    "id": "coupon_rules_v1_02",
+    "type": "policy",
+    "title": "优惠券通用使用限制与活动规则说明",
+    "text": "活动规则文档只解释通用限制，不代表客户一定具备资格。客服推荐活动前必须核对当前有效活动，不得自行创造优惠。",
+    "intent_tags": ["promotion_inquiry"],
+    "source_url": "https://help.jd.com/user/issue/169-1077.html"
+  },
+  {
+    "id": "price_protection_v1_01",
+    "type": "policy",
+    "title": "价格保护规则",
+    "text": "价格保护是否适用需要核对商品、订单状态、申请时间和活动类型。客服可以引导客户提交订单，但不得直接承诺价差返还。",
+    "intent_tags": ["promotion_inquiry", "after_sales"],
+    "source_url": "https://help.jd.com/user/issue/291-4537.html"
+  },
+  {
+    "id": "product_consulting_faq_v1_01",
+    "type": "faq",
+    "title": "常见商品咨询 FAQ",
+    "text": "商品推荐必须以当前在售商品为范围。客服应结合预算、使用场景、分类偏好和库存推荐；没有匹配商品时应继续收集需求。",
+    "intent_tags": ["product_consulting"],
+    "source_url": "internal-demo://product-consulting-faq"
+  }
+]
+

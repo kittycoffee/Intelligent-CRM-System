@@ -9,6 +9,8 @@ All notable project changes are documented here.
 - Added MySQL campaign and service-entitlement schemas with AI-safe reply boundaries.
 - Added additive migration fields for customer value tiers, lifecycle risk, detected intent, intent overrides, persisted Agent results, and evidence sufficiency.
 - Added demo campaigns and service entitlements for differentiated customer operations scenarios.
+- Added anonymized handbook chunks for returns, logistics, refunds, complaints, coupons, and product FAQ.
+- Added an explicit Qdrant handbook ingestion script and persistent local collection support.
 - Added a FastAPI AI customer-operations service with a six-node work-order workflow.
 - Added optional LangGraph orchestration with a sequential fallback for minimal local tests.
 - Added optional Qdrant local in-memory retrieval with FastEmbed and a lightweight lexical default.
@@ -20,6 +22,7 @@ All notable project changes are documented here.
 ### Changed
 
 - Added explicit HTTP timeouts for DeepSeek API calls.
+- Changed retrieval to keyword-first hybrid search with optional Qdrant semantic supplementation.
 - Moved database credentials to environment-variable overrides.
 - Marked database-mutating Java integration tests as manual tests.
 - Rewrote the README around verifiable AI workflow behavior and engineering boundaries.
