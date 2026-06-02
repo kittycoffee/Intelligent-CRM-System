@@ -19,8 +19,7 @@ const loading = ref(true) // 首次加载的全屏 Loading
 // ⭐ 交互录入弹窗状态
 const showAddModal = ref(false)
 const addForm = ref({
-  content: '',
-  type: '咨询' // 默认选咨询
+  content: ''
 })
 
 // ⭐ 按钮状态
@@ -96,7 +95,7 @@ function goBack() {
 
 // 打开弹窗
 function openAddModal() {
-  addForm.value = {content: '', type: '咨询'}
+  addForm.value = {content: ''}
   showAddModal.value = true
 }
 
@@ -109,8 +108,7 @@ async function submitAddRecord() {
   try {
     await axios.post('/api/interaction/add', {
       custId: custId,
-      content: addForm.value.content,
-      type: addForm.value.type
+      content: addForm.value.content
     })
 
     // 录入成功后，刷新页面数据 (AI 也会在后台更新)
@@ -275,22 +273,8 @@ function getLevelClass(level) {
         <p class="modal-desc">系统将自动触发 AI 重新评估该客户的价值与流失风险。</p>
 
         <div class="form-item">
-          <label>交互类型：</label>
-          <div class="radio-group">
-            <label class="radio-label">
-              <input type="radio" v-model="addForm.type" value="咨询">
-              <span class="radio-btn blue">📞 咨询/日常</span>
-            </label>
-            <label class="radio-label">
-              <input type="radio" v-model="addForm.type" value="投诉">
-              <span class="radio-btn red">😡 投诉/不满</span>
-            </label>
-          </div>
-        </div>
-
-        <div class="form-item">
           <label>详细内容：</label>
-          <textarea v-model="addForm.content" rows="4" placeholder="例如：客户询问是否有双十一活动..."></textarea>
+          <textarea v-model="addForm.content" rows="4" placeholder="记录客户的原始反馈，系统会自动识别咨询、投诉、售后或活动咨询。"></textarea>
         </div>
 
         <div class="modal-actions">

@@ -15,6 +15,7 @@ All notable project changes are documented here.
 - Expanded the offline regression suite to 30 grounded customer-operations scenarios and split the evaluation report into explainable metrics.
 - Added Java payload mapping for campaigns, entitlements, customer strategy dimensions, and intent overrides.
 - Added persisted work-order Agent JSON, detected intent, and evidence sufficiency with an intent-correction endpoint.
+- Added work-order UI sections for customer strategy, eligible campaigns, service entitlements, handbook evidence, internal actions, risk flags, and staff intent correction.
 - Added a FastAPI AI customer-operations service with a six-node work-order workflow.
 - Added optional LangGraph orchestration with a sequential fallback for minimal local tests.
 - Added optional Qdrant local in-memory retrieval with FastEmbed and a lightweight lexical default.
@@ -28,6 +29,7 @@ All notable project changes are documented here.
 - Added explicit HTTP timeouts for DeepSeek API calls.
 - Changed retrieval to keyword-first hybrid search with optional Qdrant semantic supplementation.
 - Replaced heuristic confidence percentages with explainable evidence sufficiency levels.
+- Removed the manual consultation/complaint choice from interaction capture; staff record raw feedback and correct intent only when needed.
 - Moved database credentials to environment-variable overrides.
 - Marked database-mutating Java integration tests as manual tests.
 - Rewrote the README around verifiable AI workflow behavior and engineering boundaries.

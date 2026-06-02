@@ -18,6 +18,15 @@ const handleForm = ref({ result: '' })
 const aiAnalysisText = ref("") // 给管理员看的分析
 const aiReplyDraft = ref("")   // 给客户发的话术
 const agentResult = ref(null)  // Agent 工作流结构化结果
+const intentOverride = ref('')
+const intentOptions = [
+  { value: '', label: '使用自动识别' },
+  { value: 'product_consulting', label: '商品咨询' },
+  { value: 'complaint', label: '投诉' },
+  { value: 'after_sales', label: '售后' },
+  { value: 'promotion_inquiry', label: '活动咨询' },
+  { value: 'general_service', label: '其他服务' }
+]
 
 onMounted(() => { fetchData() })
 
@@ -85,8 +94,11 @@ function openHandleModal(item) {
   aiAnalysisText.value = ""
   aiReplyDraft.value = ""
   agentResult.value = null
+  intentOverride.value = item.intentOverride || ''
 
-  if (item.aiSuggestedReply) {
+  if (item.agentResult) {
+    parseAgentResult(item.agentResult)
+  } else if (item.aiSuggestedReply) {
     parseAiContent(item.aiSuggestedReply)
   }
 
@@ -114,21 +126,39 @@ function parseAgentResult(result) {
   aiReplyDraft.value = result.reply_draft || result.replyDraft || ''
   const profile = result.customer_profile || {}
   const level = profile.level || profile.customerLevel || '未知等级'
-  aiAnalysisText.value = `识别意图：${result.intent || 'unknown'}；客户等级：${level}；置信度：${formatConfidence(result.confidence)}`
+  const strategy = result.customer_strategy || {}
+  aiAnalysisText.value = `识别意图：${result.intent || 'unknown'}；客户等级：${level}；价值分层：${strategy.value_tier || 'unknown'}；生命周期：${strategy.lifecycle_risk || 'unknown'}`
 
   if (!aiReplyDraft.value && result.data) {
     parseAgentResult(result.data)
   }
 }
 
-function formatConfidence(value) {
-  if (value === undefined || value === null || value === '') return 'N/A'
-  return `${Math.round(Number(value) * 100)}%`
+function sufficiencyLabel(value) {
+  return { sufficient: '证据充分', partial: '证据部分充分', insufficient: '证据不足，建议人工确认' }[value] || '待分析'
 }
 
 function evidenceLabel(item) {
   const sourceMap = { product: '商品', policy: '政策', faq: 'FAQ' }
   return sourceMap[item.source] || item.source || '证据'
+}
+
+async function applyIntentOverride() {
+  if (!currentItem.value?.id) return
+  analyzing.value = true
+  try {
+    const res = await axios.post(`/api/interaction/override-intent/${currentItem.value.id}`, {
+      intentOverride: intentOverride.value
+    })
+    parseAgentResult(res.data)
+    currentItem.value.intentOverride = intentOverride.value
+    currentItem.value.aiSuggestedReply = aiReplyDraft.value
+  } catch (error) {
+    console.error(error)
+    alert('意图修正失败，请重试')
+  } finally {
+    analyzing.value = false
+  }
 }
 
 function viewHistoryDetail(item) {
@@ -139,7 +169,9 @@ function viewHistoryDetail(item) {
   aiAnalysisText.value = ""
   aiReplyDraft.value = ""
   agentResult.value = null
+  intentOverride.value = item.intentOverride || ''
 
+  if (item.agentResult) parseAgentResult(item.agentResult)
   showModal.value = true
 }
 
@@ -285,8 +317,20 @@ function formatTime(t) { return t ? t.replace('T', ' ') : '' }
             <div v-if="agentResult" class="agent-panel">
               <div class="agent-metrics">
                 <span>意图：{{ agentResult.intent }}</span>
-                <span>置信度：{{ formatConfidence(agentResult.confidence) }}</span>
+                <span class="strategy-chip">{{ agentResult.customer_strategy?.value_tier === 'high' ? '高价值客户' : '普通客户' }}</span>
+                <span class="strategy-chip">{{ agentResult.customer_strategy?.lifecycle_risk }}</span>
+                <span :class="['sufficiency-chip', agentResult.evidence_sufficiency]">
+                  {{ sufficiencyLabel(agentResult.evidence_sufficiency) }}
+                </span>
                 <span v-if="agentResult.fallback" class="warning-chip">已降级</span>
+              </div>
+
+              <div class="agent-section intent-editor">
+                <strong>人工修正意图</strong>
+                <select v-model="intentOverride">
+                  <option v-for="option in intentOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
+                </select>
+                <button @click="applyIntentOverride" :disabled="analyzing">应用并重新生成</button>
               </div>
 
               <div v-if="agentResult.trace?.length" class="agent-section">
@@ -298,18 +342,43 @@ function formatTime(t) { return t ? t.replace('T', ' ') : '' }
                 </div>
               </div>
 
-              <div v-if="agentResult.retrieved_evidence?.length" class="agent-section">
-                <strong>检索证据</strong>
-                <div v-for="item in agentResult.retrieved_evidence" :key="item.id" class="evidence-item">
-                  <span class="evidence-tag">{{ evidenceLabel(item) }}</span>
-                  <span>{{ item.title }}</span>
-                  <small>score {{ item.score }}</small>
+              <div v-if="agentResult.available_campaigns?.length" class="agent-section">
+                <strong>可用活动</strong>
+                <div v-for="item in agentResult.available_campaigns" :key="item.evidence_id" class="evidence-item">
+                  <span class="evidence-tag">MySQL</span>
+                  <span>{{ item.campaign_name }}</span>
+                  <small>{{ item.allowedReplyText }}</small>
                 </div>
               </div>
 
-              <div v-if="agentResult.risk_warnings?.length" class="agent-section risk-section">
+              <div v-if="agentResult.service_entitlements?.length" class="agent-section">
+                <strong>服务权益</strong>
+                <div v-for="item in agentResult.service_entitlements" :key="item.evidence_id" class="evidence-item">
+                  <span class="evidence-tag">MySQL</span>
+                  <span>{{ item.name }}</span>
+                  <small>{{ item.responseSla || '无固定 SLA' }} · {{ item.requiresManualApproval ? '需人工确认' : '可按边界承诺' }}</small>
+                </div>
+              </div>
+
+              <div v-if="agentResult.retrieved_docs?.length" class="agent-section">
+                <strong>手册证据</strong>
+                <div v-for="item in agentResult.retrieved_docs" :key="item.doc_id" class="evidence-item">
+                  <span class="evidence-tag">{{ item.evidence_type }}</span>
+                  <span>{{ item.title }}</span>
+                  <small>{{ item.text }}</small>
+                </div>
+              </div>
+
+              <div v-if="agentResult.internal_actions?.length" class="agent-section">
+                <strong>客服内部动作</strong>
+                <div v-for="action in agentResult.internal_actions" :key="action" class="action-item">
+                  {{ action }}
+                </div>
+              </div>
+
+              <div v-if="agentResult.risk_flags?.length" class="agent-section risk-section">
                 <strong>风险提示</strong>
-                <div v-for="warning in agentResult.risk_warnings" :key="warning">- {{ warning }}</div>
+                <div v-for="flag in agentResult.risk_flags" :key="flag.message">- {{ flag.message }}</div>
               </div>
             </div>
             <div class="ai-reply">
@@ -392,13 +461,22 @@ function formatTime(t) { return t ? t.replace('T', ' ') : '' }
 .agent-metrics { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
 .agent-metrics span { background: #f4f4f5; padding: 3px 7px; border-radius: 4px; }
 .agent-metrics .warning-chip { background: #fdf6ec; color: #e6a23c; }
+.agent-metrics .strategy-chip { background: #f0f9eb; color: #529b2e; }
+.agent-metrics .sufficiency-chip.partial { background: #fdf6ec; color: #b88230; }
+.agent-metrics .sufficiency-chip.insufficient { background: #fef0f0; color: #c45656; }
+.agent-metrics .sufficiency-chip.sufficient { background: #f0f9eb; color: #529b2e; }
 .agent-section { border-top: 1px dashed #ddd; padding-top: 8px; margin-top: 8px; }
 .trace-list { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
 .trace-item { background: #ecf5ff; color: #409eff; padding: 3px 6px; border-radius: 4px; }
-.evidence-item { display: flex; align-items: center; gap: 6px; margin-top: 6px; }
+.evidence-item { display: grid; grid-template-columns: auto minmax(120px, auto) 1fr; align-items: start; gap: 6px; margin-top: 6px; }
 .evidence-item small { color: #999; }
 .evidence-tag { background: #f0f9eb; color: #67c23a; padding: 2px 5px; border-radius: 3px; }
 .risk-section { color: #e6a23c; line-height: 1.6; }
+.action-item { margin-top: 6px; padding-left: 12px; position: relative; }
+.action-item::before { content: '•'; position: absolute; left: 0; color: #409eff; }
+.intent-editor { display: flex; gap: 8px; align-items: center; }
+.intent-editor select { padding: 4px 6px; border: 1px solid #dcdfe6; border-radius: 4px; }
+.intent-editor button { padding: 4px 8px; border: 1px solid #409eff; background: white; color: #409eff; border-radius: 4px; cursor: pointer; }
 
 .ai-empty-state { text-align: center; padding: 15px; color: #666; }
 
