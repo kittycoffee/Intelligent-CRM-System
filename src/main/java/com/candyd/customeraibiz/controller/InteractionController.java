@@ -15,6 +15,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RestController
 @RequestMapping("/interaction")
@@ -25,6 +28,7 @@ public class InteractionController {
     @Autowired private CustomerInfoMapper customerMapper;
     @Autowired private AiMarketingService aiService;
     @Autowired private AiAgentWorkflowService agentWorkflowService;
+    @Autowired private ObjectMapper objectMapper;
 
     // 1. 获取待办列表 (保持不变)
     @GetMapping("/pending")
@@ -43,6 +47,10 @@ public class InteractionController {
             map.put("createTime", i.getCreateTime());
             // 把 AI 算好的回复给前端 (可能为空)
             map.put("aiSuggestedReply", i.getAiSuggestedReply());
+            map.put("detectedIntent", i.getDetectedIntent());
+            map.put("intentOverride", i.getIntentOverride());
+            map.put("evidenceSufficiency", i.getEvidenceSufficiency());
+            map.put("agentResult", parseAgentResult(i.getAgentResultJson()));
             result.add(map);
         }
         return result;
@@ -53,7 +61,7 @@ public class InteractionController {
     public String addInteraction(@RequestBody Map<String, Object> params) {
         Long custId = Long.valueOf(params.get("custId").toString());
         String content = (String) params.get("content");
-        String type = params.containsKey("type") ? (String) params.get("type") : "日常沟通";
+        String type = params.containsKey("type") ? (String) params.get("type") : "待识别";
 
         CustInteraction interaction = new CustInteraction();
         interaction.setCustId(custId);
@@ -117,6 +125,10 @@ public class InteractionController {
             map.put("content", i.getContent());
             map.put("createTime", i.getCreateTime());
             map.put("handleResult", i.getHandleResult());
+            map.put("detectedIntent", i.getDetectedIntent());
+            map.put("intentOverride", i.getIntentOverride());
+            map.put("evidenceSufficiency", i.getEvidenceSufficiency());
+            map.put("agentResult", parseAgentResult(i.getAgentResultJson()));
             result.add(map);
         }
         return result;
@@ -151,6 +163,26 @@ public class InteractionController {
             result.put("code", 500);
             result.put("msg", "生成失败：" + e.getMessage());
             return result;
+        }
+    }
+
+    @PostMapping("/override-intent/{id}")
+    public Map<String, Object> overrideIntent(@PathVariable Long id, @RequestBody Map<String, Object> params) {
+        CustInteraction interaction = interactionMapper.selectById(id);
+        if (interaction == null) {
+            return Map.of("code", 404, "msg", "记录不存在");
+        }
+        interaction.setIntentOverride(String.valueOf(params.getOrDefault("intentOverride", "")));
+        interactionMapper.updateById(interaction);
+        return agentWorkflowService.generateWorkOrderResult(interaction);
+    }
+
+    private Map<String, Object> parseAgentResult(String json) {
+        if (json == null || json.isBlank()) return null;
+        try {
+            return objectMapper.readValue(json, new TypeReference<Map<String, Object>>() {});
+        } catch (JsonProcessingException e) {
+            return null;
         }
     }
 }

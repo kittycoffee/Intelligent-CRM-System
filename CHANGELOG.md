@@ -13,6 +13,8 @@ All notable project changes are documented here.
 - Added an explicit Qdrant handbook ingestion script and persistent local collection support.
 - Added an evidence-bound seven-node Agent workflow with separate customer strategy, internal actions, reply drafts, risk flags, and evidence sufficiency.
 - Expanded the offline regression suite to 30 grounded customer-operations scenarios and split the evaluation report into explainable metrics.
+- Added Java payload mapping for campaigns, entitlements, customer strategy dimensions, and intent overrides.
+- Added persisted work-order Agent JSON, detected intent, and evidence sufficiency with an intent-correction endpoint.
 - Added a FastAPI AI customer-operations service with a six-node work-order workflow.
 - Added optional LangGraph orchestration with a sequential fallback for minimal local tests.
 - Added optional Qdrant local in-memory retrieval with FastEmbed and a lightweight lexical default.
