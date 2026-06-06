@@ -1,0 +1,58 @@
+# Reusable source registry for Customer-ai-biz analytics.
+# Fill connection details with safe local names or environment variable references,
+# not secrets.
+
+project:
+  name: Customer-ai-biz
+  domain: Intelligent CRM + AI Agent
+  timezone: Asia/Shanghai
+
+sources:
+  mysql_app:
+    type: mysql
+    status: planned
+    owner: backend
+    connection_reference: "${MYSQL_URL}"
+    description: Primary Spring Boot application database.
+    expected_subjects:
+      - customers
+      - orders
+      - interactions
+      - rfm_scores
+      - agent_conversations
+      - rag_documents
+    freshness_expectation: application-dependent
+    notes:
+      - Confirm actual schema from migrations or database introspection.
+
+  fastapi_ai_service:
+    type: service_logs
+    status: planned
+    owner: ai-service
+    connection_reference: ai-service runtime logs or exported tables
+    description: AI service request, retrieval, generation, and agent workflow telemetry.
+    expected_subjects:
+      - embeddings
+      - retrieval_events
+      - model_calls
+      - tool_calls
+      - workflow_runs
+    freshness_expectation: application-dependent
+    notes:
+      - Define event schema before using for KPI reporting.
+
+  frontend_usage:
+    type: product_analytics
+    status: candidate
+    owner: frontend
+    connection_reference: TBD
+    description: Vue frontend usage events if instrumentation exists or is added.
+    expected_subjects:
+      - page_views
+      - feature_clicks
+      - crm_actions
+      - ai_assistant_actions
+    freshness_expectation: TBD
+    notes:
+      - Add only after instrumentation is confirmed.
+

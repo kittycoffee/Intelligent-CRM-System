@@ -45,13 +45,16 @@ function goBack() {
   router.push('/') // 返回首页
 }
 
-// 辅助函数：给不同等级加上不同的样式类名
-function getLevelClass(level) {
-  if (!level) return ''
-  if (level.includes('重要')) return 'tag-important'
-  if (level.includes('挽留')) return 'tag-warning'
-  if (level.includes('一般')) return 'tag-normal'
-  return 'tag-default'
+function valueTierLabel(value) {
+  return { high: '高价值客户', normal: '普通价值客户' }[value] || '待分析'
+}
+
+function lifecycleRiskLabel(value) {
+  return { active: '活跃', silent: '沉睡', churn_risk: '流失风险' }[value] || '待分析'
+}
+
+function lifecycleRiskClass(value) {
+  return { active: 'tag-normal', silent: 'tag-warning', churn_risk: 'tag-important' }[value] || 'tag-default'
 }
 
 // 辅助函数：简单的处理时间显示 (比如去掉 'T')
@@ -82,7 +85,8 @@ function formatTime(timeStr) {
         <thead>
         <tr>
           <th width="100">客户ID</th>
-          <th width="150">客户等级</th>
+          <th width="150">价值等级</th>
+          <th width="120">生命周期风险</th>
           <th>AI 建议策略</th>
           <th width="180">生成时间</th>
         </tr>
@@ -92,8 +96,14 @@ function formatTime(timeStr) {
           <td>{{ item.custId }}</td>
 
           <td>
-              <span class="tag" :class="getLevelClass(item.customerLevel)">
-                {{ item.customerLevel }}
+              <span class="tag" :class="item.valueTier === 'high' ? 'tag-important' : 'tag-normal'">
+                {{ valueTierLabel(item.valueTier) }}
+              </span>
+          </td>
+
+          <td>
+              <span class="tag" :class="lifecycleRiskClass(item.lifecycleRisk)">
+                {{ lifecycleRiskLabel(item.lifecycleRisk) }}
               </span>
           </td>
 

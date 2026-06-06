@@ -1,0 +1,98 @@
+# Canonical metric definitions for future analysis.
+# Treat these as drafts until validated against the database schema.
+
+metric_groups:
+  crm_growth:
+    metrics:
+      active_customers:
+        definition: Count of customers with at least one qualifying activity in the period.
+        grain: customer-period
+        numerator: customers with order or interaction activity
+        denominator: null
+        dimensions:
+          - segment
+          - lifecycle_stage
+          - region
+        validation_notes:
+          - Define qualifying activity before reporting.
+
+      revenue:
+        definition: Sum of paid order amount in the period.
+        grain: order
+        numerator: sum(paid_amount)
+        denominator: null
+        dimensions:
+          - segment
+          - acquisition_channel
+          - rfm_segment
+        validation_notes:
+          - Confirm whether refunds, cancellations, and discounts are netted.
+
+      repeat_purchase_rate:
+        definition: Share of purchasing customers in a period who have purchased before.
+        grain: customer-period
+        numerator: customers with current-period order and prior order
+        denominator: customers with current-period order
+        dimensions:
+          - segment
+          - acquisition_channel
+        validation_notes:
+          - Decide whether same-day multiple orders count as repeat behavior.
+
+  rfm:
+    metrics:
+      high_value_customer_count:
+        definition: Count of customers in high-value RFM segments as of the latest scoring run.
+        grain: customer-score-run
+        numerator: customers assigned to configured high-value segments
+        denominator: null
+        dimensions:
+          - rfm_segment
+          - score_run_at
+        validation_notes:
+          - Maintain a single mapping of which RFM segments are considered high value.
+
+      at_risk_customer_count:
+        definition: Count of customers in at-risk RFM segments as of the latest scoring run.
+        grain: customer-score-run
+        numerator: customers assigned to configured at-risk segments
+        denominator: null
+        dimensions:
+          - rfm_segment
+          - score_run_at
+
+  ai_agent:
+    metrics:
+      agent_task_success_rate:
+        definition: Share of AI Agent runs that completed with a successful outcome.
+        grain: agent-run
+        numerator: successful agent runs
+        denominator: completed agent runs
+        dimensions:
+          - workflow_name
+          - agent_type
+          - model
+        validation_notes:
+          - Define status mapping for success, partial success, failure, and user-abandoned runs.
+
+      rag_answer_grounding_rate:
+        definition: Share of RAG answers with at least one accepted citation or retrieved supporting document.
+        grain: answer
+        numerator: grounded answers
+        denominator: RAG answers
+        dimensions:
+          - collection
+          - workflow_name
+        validation_notes:
+          - Requires retrieval and citation telemetry.
+
+      average_agent_latency_ms:
+        definition: Average end-to-end latency for AI Agent runs.
+        grain: agent-run
+        numerator: sum(latency_ms)
+        denominator: count(agent runs)
+        dimensions:
+          - workflow_name
+          - agent_type
+          - model
+

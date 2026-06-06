@@ -18,7 +18,7 @@ public class CustomerDetailVO {
     // 1. 基础信息
     private CustomerInfo basicInfo;
 
-    // 2. RFM 画像
+    // 2. 客户策略快照：价值等级与生命周期风险
     private CustRfmSnapshot rfmSnapshot;
 
     // 3. AI 建议 (最新的一条)

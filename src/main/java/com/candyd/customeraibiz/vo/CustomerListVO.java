@@ -15,11 +15,9 @@ public class CustomerListVO {
     private String phone;
     private LocalDate birthday;
 
-    // --- 核心画像 ---
-    private String customerLevel;
-    private Integer rScore;
-    private Integer fScore;
-    private Integer mScore;
+    // --- 当前客户策略 ---
+    private String valueTier;
+    private String lifecycleRisk;
 
     // --- AI 状态 ---
     private String latestAdvice;

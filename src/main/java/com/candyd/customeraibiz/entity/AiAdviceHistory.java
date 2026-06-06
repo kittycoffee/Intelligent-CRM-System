@@ -29,8 +29,10 @@ public class AiAdviceHistory {
 
     private LocalDateTime createTime;
 
-    // --- 修正点 3：数据库表里没有 customer_level 字段 ---
-    // 必须加 exist = false，告诉 MyBatis-Plus 插入时忽略这个字段，否则会报 "Unknown column" 错误
+    // 展示用临时字段，不写入 ai_advice_history 表。
     @TableField(exist = false)
-    private String customerLevel;
+    private String valueTier;
+
+    @TableField(exist = false)
+    private String lifecycleRisk;
 }

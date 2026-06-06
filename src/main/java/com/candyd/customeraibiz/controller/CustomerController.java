@@ -33,7 +33,8 @@ public class CustomerController {
     @GetMapping("/list")
     public List<Map<String, Object>> list(
             @RequestParam(required = false) String name,
-            @RequestParam(required = false) String level,
+            @RequestParam(required = false) String valueTier,
+            @RequestParam(required = false) String lifecycleRisk,
             @RequestParam(required = false) String gender
     ) {
         QueryWrapper<CustomerInfo> query = new QueryWrapper<>();
@@ -48,7 +49,10 @@ public class CustomerController {
             item.put("info", info);
 
             CustRfmSnapshot rfm = rfmMapper.selectOne(
-                    new QueryWrapper<CustRfmSnapshot>().eq("cust_id", info.getCustId()).last("LIMIT 1")
+                    new QueryWrapper<CustRfmSnapshot>()
+                            .eq("cust_id", info.getCustId())
+                            .orderByDesc("snapshot_date", "id")
+                            .last("LIMIT 1")
             );
             item.put("rfm", rfm != null ? rfm : new CustRfmSnapshot());
 
@@ -58,10 +62,8 @@ public class CustomerController {
             // 列表页只需要看个大概，所以只返回字符串内容
             item.put("aiAdvice", advice != null ? advice.getAdviceContent() : null);
 
-            if (StringUtils.hasText(level)) {
-                String currentLevel = (rfm != null) ? rfm.getCustomerLevel() : "";
-                if (!level.equals(currentLevel)) continue;
-            }
+            if (StringUtils.hasText(valueTier) && (rfm == null || !valueTier.equals(rfm.getValueTier()))) continue;
+            if (StringUtils.hasText(lifecycleRisk) && (rfm == null || !lifecycleRisk.equals(rfm.getLifecycleRisk()))) continue;
             result.add(item);
         }
         return result;
@@ -78,9 +80,12 @@ public class CustomerController {
         // A. 基础信息
         data.put("info", customerMapper.selectById(custId));
 
-        // B. RFM 画像
+        // B. 客户策略快照：价值等级与生命周期风险分开保存
         data.put("rfm", rfmMapper.selectOne(
-                new QueryWrapper<CustRfmSnapshot>().eq("cust_id", custId).last("LIMIT 1")
+                new QueryWrapper<CustRfmSnapshot>()
+                        .eq("cust_id", custId)
+                        .orderByDesc("snapshot_date", "id")
+                        .last("LIMIT 1")
         ));
 
         // C. AI 建议 (返回完整对象，以便前端能取到 adviceContent)
@@ -121,7 +126,7 @@ public class CustomerController {
 //    修改，之前的方法会导致ai诊断只会基于旧数据
     @PostMapping("/diagnose/{custId}")
     public String manualDiagnose(@PathVariable Long custId) {
-        // 1. 先基于全部订单重新计算 RFM，刷新快照
+        // 1. 先刷新价值等级与生命周期风险快照
         rfmAnalysisService.analyzeCustomer(custId);
         // 2. 再调用 AI 生成最新诊断
         aiService.generateAiAdvice(custId);

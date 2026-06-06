@@ -2,7 +2,7 @@ import os
 import unittest
 from unittest.mock import patch
 
-from agent_core import run_agent_workflow
+from agent_core import Evidence, run_agent_workflow
 
 os.environ.setdefault("AI_RETRIEVAL_BACKEND", "lexical")
 os.environ["DASHSCOPE_API_KEY"] = ""
@@ -102,6 +102,39 @@ class AgentCoreTest(unittest.TestCase):
         payload["intentOverride"] = "after_sales"
         result = run_agent_workflow(payload)
         self.assertEqual(result.intent, "after_sales")
+
+    def test_insufficient_evidence_expands_retrieval_once(self):
+        payload = dict(BASE_PAYLOAD)
+        payload["content"] = "after sales policy check"
+        payload["intentOverride"] = "after_sales"
+        calls = []
+
+        def fake_retrieve_handbook(query, intent, top_k=3, expanded=False):
+            calls.append({"top_k": top_k, "expanded": expanded})
+            if not expanded:
+                return [], "fake"
+            return [
+                Evidence(
+                    id="policy_return",
+                    source="policy",
+                    title="After-sales policy",
+                    text="Check the order before handling after-sales requests.",
+                    score=0.2,
+                    evidence_type="keyword",
+                    metadata={
+                        "intent_tags": ["after_sales"],
+                        "customer_safe_summary": "Please provide the order id so we can verify it first.",
+                    },
+                )
+            ], "fake"
+
+        with patch("agent_core.retrieve_handbook", fake_retrieve_handbook):
+            result = run_agent_workflow(payload)
+
+        self.assertEqual([call["expanded"] for call in calls], [False, True])
+        self.assertEqual(calls[1]["top_k"], 6)
+        self.assertEqual(result.evidence_sufficiency, "sufficient")
+        self.assertEqual(result.retrieval_backend, "fake+expanded")
 
     def test_unselected_campaign_does_not_leak_into_template_reply(self):
         payload = dict(BASE_PAYLOAD)

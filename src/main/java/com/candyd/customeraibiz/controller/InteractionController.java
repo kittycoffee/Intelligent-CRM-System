@@ -7,6 +7,7 @@ import com.candyd.customeraibiz.mapper.CustInteractionMapper;
 import com.candyd.customeraibiz.mapper.CustomerInfoMapper;
 import com.candyd.customeraibiz.service.AiAgentWorkflowService;
 import com.candyd.customeraibiz.service.AiMarketingService;
+import com.candyd.customeraibiz.service.RfmAnalysisService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,6 +29,7 @@ public class InteractionController {
     @Autowired private CustomerInfoMapper customerMapper;
     @Autowired private AiMarketingService aiService;
     @Autowired private AiAgentWorkflowService agentWorkflowService;
+    @Autowired private RfmAnalysisService rfmAnalysisService;
     @Autowired private ObjectMapper objectMapper;
 
     // 1. 获取待办列表 (保持不变)
@@ -73,6 +75,9 @@ public class InteractionController {
         interaction.setStatus(0);
 
         interactionMapper.insert(interaction);
+
+        // 生命周期风险依赖近期负面工单，录入后必须先刷新策略快照。
+        rfmAnalysisService.analyzeCustomer(custId);
 
         // 🔥 修改点：异步处理防止系统阻塞 (后端)
         // 去掉 generateReplyDraft 的同步调用，避免卡死

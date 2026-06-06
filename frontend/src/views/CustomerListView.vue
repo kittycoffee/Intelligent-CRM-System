@@ -10,7 +10,8 @@ const loading = ref(true)
 // 查询条件
 const searchForm = ref({
   name: '',
-  level: '',
+  valueTier: '',
+  lifecycleRisk: '',
   gender: ''
 })
 
@@ -24,7 +25,8 @@ async function fetchList() {
     // 构造查询参数
     const params = {}
     if (searchForm.value.name) params.name = searchForm.value.name
-    if (searchForm.value.level && searchForm.value.level !== '全部等级') params.level = searchForm.value.level
+    if (searchForm.value.valueTier) params.valueTier = searchForm.value.valueTier
+    if (searchForm.value.lifecycleRisk) params.lifecycleRisk = searchForm.value.lifecycleRisk
     if (searchForm.value.gender && searchForm.value.gender !== '全部性别') params.gender = searchForm.value.gender
 
     const res = await axios.get('/api/customer/list', { params })
@@ -35,6 +37,16 @@ async function fetchList() {
   } finally {
     loading.value = false
   }
+}
+
+function resetSearch() {
+  searchForm.value = {
+    name: '',
+    valueTier: '',
+    lifecycleRisk: '',
+    gender: ''
+  }
+  fetchList()
 }
 
 // 跳转详情
@@ -64,13 +76,16 @@ function shortAdvice(text) {
   return cleanText.length > 20 ? cleanText.substring(0, 20) + '...' : cleanText
 }
 
-// 辅助函数：根据等级返回颜色 class
-function getLevelClass(level) {
-  if (!level) return '';
-  if (level.includes('重要价值')) return 'tag-red';
-  if (level.includes('一般保持')) return 'tag-blue';
-  if (level.includes('流失风险')) return 'tag-grey';
-  return 'tag-green'; // 兜底颜色
+function valueTierLabel(value) {
+  return { high: '高价值客户', normal: '普通价值客户' }[value] || '待分析'
+}
+
+function lifecycleRiskLabel(value) {
+  return { active: '活跃', silent: '沉睡', churn_risk: '流失风险' }[value] || '待分析'
+}
+
+function lifecycleRiskClass(value) {
+  return { active: 'tag-green', silent: 'tag-orange', churn_risk: 'tag-red' }[value] || 'tag-grey'
 }
 </script>
 
@@ -82,13 +97,19 @@ function getLevelClass(level) {
     </div>
 
     <div class="search-bar">
-      <input v-model="searchForm.name" placeholder="请输入客户姓名..." class="search-input">
+      <input v-model="searchForm.name" placeholder="请输入客户姓名..." class="search-input" @keyup.enter="fetchList">
 
-      <select v-model="searchForm.level">
-        <option value="">全部等级</option>
-        <option value="重要价值客户">重要价值客户</option>
-        <option value="一般保持客户">一般保持客户</option>
-        <option value="流失风险客户">流失风险客户</option>
+      <select v-model="searchForm.valueTier" class="search-select">
+        <option value="">全部价值等级</option>
+        <option value="high">高价值客户</option>
+        <option value="normal">普通价值客户</option>
+      </select>
+
+      <select v-model="searchForm.lifecycleRisk" class="search-select">
+        <option value="">全部生命周期</option>
+        <option value="active">活跃</option>
+        <option value="silent">沉睡</option>
+        <option value="churn_risk">流失风险</option>
       </select>
 
       <select v-model="searchForm.gender" class="search-select">
@@ -98,6 +119,7 @@ function getLevelClass(level) {
       </select>
 
       <button class="search-btn" @click="fetchList">🔍 查询</button>
+      <button class="reset-btn" @click="resetSearch">重置</button>
     </div>
 
     <div class="table-card">
@@ -110,7 +132,8 @@ function getLevelClass(level) {
           <th>姓名</th>
           <th>性别</th>
           <th>电话</th>
-          <th>RFM 等级</th>
+          <th>价值等级</th>
+          <th>生命周期风险</th>
           <th>AI 最新建议预览</th>
           <th>操作</th>
         </tr>
@@ -122,8 +145,13 @@ function getLevelClass(level) {
           <td>{{ item.info.gender }}</td>
           <td>{{ item.info.phone }}</td>
           <td>
-              <span class="level-tag" :class="getLevelClass(item.rfm.customerLevel)">
-                {{ item.rfm.customerLevel || '普通客户' }}
+              <span class="level-tag" :class="item.rfm.valueTier === 'high' ? 'tag-blue' : 'tag-grey'">
+                {{ valueTierLabel(item.rfm.valueTier) }}
+              </span>
+          </td>
+          <td>
+              <span class="level-tag" :class="lifecycleRiskClass(item.rfm.lifecycleRisk)">
+                {{ lifecycleRiskLabel(item.rfm.lifecycleRisk) }}
               </span>
           </td>
           <td class="ai-col">
@@ -153,6 +181,8 @@ function getLevelClass(level) {
 .search-input { width: 200px; }
 .search-btn { background: #42b883; color: white; border: none; padding: 0 25px; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.2s; }
 .search-btn:hover { background: #3aa876; }
+.reset-btn { background: white; color: #606266; border: 1px solid #dcdfe6; padding: 0 20px; border-radius: 4px; cursor: pointer; transition: 0.2s; }
+.reset-btn:hover { color: #409eff; border-color: #c6e2ff; background: #ecf5ff; }
 
 /* 表格 */
 .table-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 12px rgba(0,0,0,0.05); min-height: 400px; }
@@ -184,6 +214,22 @@ function getLevelClass(level) {
   background: #f4f4f5;
   color: #909399;
   border: 1px solid #e9e9eb;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+.tag-green {
+  background: #f0f9eb;
+  color: #67c23a;
+  border: 1px solid #e1f3d8;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+.tag-orange {
+  background: #fdf6ec;
+  color: #e6a23c;
+  border: 1px solid #faecd8;
   padding: 4px 10px;
   border-radius: 4px;
   font-size: 12px;

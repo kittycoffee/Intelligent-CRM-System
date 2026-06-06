@@ -5,12 +5,9 @@ INSERT INTO customer_info (cust_id, cust_name, gender, phone, birthday)
 VALUES (9001, '演示客户', '女', '13800009001', '1998-08-18')
 ON DUPLICATE KEY UPDATE cust_name = VALUES(cust_name);
 
-INSERT INTO cust_rfm_snapshot (cust_id, r_score, f_score, m_score, customer_level, snapshot_date)
-VALUES (9001, 4, 5, 5, '重要价值客户', CURRENT_DATE);
-
-UPDATE cust_rfm_snapshot
-SET value_tier = 'high', lifecycle_risk = 'churn_risk'
-WHERE cust_id = 9001;
+-- Strategy snapshots are rebuilt from orders and interactions.
+-- Do not write obsolete R/F/M scores or customer_level values here.
+-- After importing demo data, call GET /rfm/analyze.
 
 INSERT INTO promotion_campaign
   (campaign_name, campaign_type, description, allowed_reply_text, target_value_tier,

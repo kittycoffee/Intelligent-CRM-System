@@ -16,6 +16,7 @@ const stats = ref({
 // ⭐ 新增：AI 简报内容
 const aiInsightText = ref("🤖 AI 正在分析今日经营数据，请稍候...")
 const loading = ref(true)
+const dashboardError = ref('')
 const chartDom = ref(null)
 
 onMounted(() => {
@@ -25,10 +26,14 @@ onMounted(() => {
 
 async function fetchDashboard() {
   try {
+    dashboardError.value = ''
     const res = await axios.get('/api/dashboard/summary')
     stats.value = res.data
     nextTick(() => { initChart() })
-  } catch (e) { console.error(e) }
+  } catch (e) {
+    console.error(e)
+    dashboardError.value = '后端统计接口未连接，当前数字不是数据库真实数据，请确认 Spring Boot 服务已启动。'
+  }
   finally { loading.value = false }
 }
 
@@ -85,6 +90,10 @@ function go(path) { router.push(path) }
       </div>
     </div>
 
+    <div v-if="dashboardError" class="error-banner">
+      {{ dashboardError }}
+    </div>
+
     <div class="stats-grid">
       <div class="card blue" @click="go('/customer')">
         <div class="icon">👥</div>
@@ -119,6 +128,15 @@ function go(path) { router.push(path) }
 .home-container { width: 98%; margin: 20px auto; padding: 20px; }
 .welcome-banner h1 { font-size: 26px; color: #333; margin: 0 0 8px 0; }
 .welcome-banner p { color: #666; font-size: 14px; margin-bottom: 20px; }
+.error-banner {
+  background: #fff7e6;
+  border: 1px solid #ffd591;
+  color: #ad6800;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  font-weight: 600;
+}
 
 /* ⭐ AI 卡片样式 */
 .ai-insight-card {

@@ -106,41 +106,42 @@ function openHandleModal(item) {
 
   if (item.agentResult) {
     parseAgentResult(item.agentResult)
-  } else if (item.aiSuggestedReply) {
-    parseAiContent(item.aiSuggestedReply)
   }
 
   showModal.value = true
 }
 
-//分割客服回复，左侧/上部展示“深度分析”（给客服自己看的内参），下方展示“推荐话术”（准备发给客户的文案）
-function parseAiContent(text) {
-  const parts = text.split('|||')
-  if (parts.length >= 2) {
-    aiAnalysisText.value = parts[0].replace('【情绪与意图分析】', '').trim()
-    aiReplyDraft.value = parts[1].replace('【建议回复话术】', '').trim()
-  } else {
-    aiReplyDraft.value = text
-  }
-}
+// 已报废：旧版 Java 直连 Qwen 返回“分析 ||| 话术”，当前 FastAPI Agent 返回结构化 JSON。
+// function parseLegacyAiContent(text) {
+//   const parts = text.split('|||')
+//   if (parts.length >= 2) {
+//     aiAnalysisText.value = parts[0].replace('【情绪与意图分析】', '').trim()
+//     aiReplyDraft.value = parts[1].replace('【建议回复话术】', '').trim()
+//   } else {
+//     aiReplyDraft.value = text
+//   }
+// }
 
 function parseAgentResult(result) {
-  if (!result || typeof result === 'string') {
-    parseAiContent(result || '')
-    return
-  }
+  if (!result || typeof result === 'string') return
 
   agentResult.value = result
   selectedCampaignIds.value = (result.selected_campaigns || []).map(item => item.campaign_id)
   aiReplyDraft.value = result.reply_draft || result.replyDraft || ''
-  const profile = result.customer_profile || {}
-  const level = profile.level || profile.customerLevel || '未知等级'
   const strategy = result.customer_strategy || {}
-  aiAnalysisText.value = `识别意图：${result.intent || 'unknown'}；客户等级：${level}；价值分层：${strategy.value_tier || 'unknown'}；生命周期：${strategy.lifecycle_risk || 'unknown'}`
+  aiAnalysisText.value = `识别意图：${result.intent || 'unknown'}；价值等级：${valueTierLabel(strategy.value_tier)}；生命周期风险：${lifecycleRiskLabel(strategy.lifecycle_risk)}`
 
   if (!aiReplyDraft.value && result.data) {
     parseAgentResult(result.data)
   }
+}
+
+function valueTierLabel(value) {
+  return { high: '高价值客户', normal: '普通价值客户' }[value] || '待分析'
+}
+
+function lifecycleRiskLabel(value) {
+  return { active: '活跃', silent: '沉睡', churn_risk: '流失风险' }[value] || '待分析'
 }
 
 function sufficiencyLabel(value) {
@@ -330,8 +331,8 @@ function formatTime(t) { return t ? t.replace('T', ' ') : '' }
             <div v-if="agentResult" class="agent-panel">
               <div class="agent-metrics">
                 <span>意图：{{ agentResult.intent }}</span>
-                <span class="strategy-chip">{{ agentResult.customer_strategy?.value_tier === 'high' ? '高价值客户' : '普通客户' }}</span>
-                <span class="strategy-chip">{{ agentResult.customer_strategy?.lifecycle_risk }}</span>
+                <span class="strategy-chip">{{ valueTierLabel(agentResult.customer_strategy?.value_tier) }}</span>
+                <span class="strategy-chip">{{ lifecycleRiskLabel(agentResult.customer_strategy?.lifecycle_risk) }}</span>
                 <span :class="['sufficiency-chip', agentResult.evidence_sufficiency]">
                   {{ sufficiencyLabel(agentResult.evidence_sufficiency) }}
                 </span>

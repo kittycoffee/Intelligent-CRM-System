@@ -177,10 +177,6 @@ public class AiAgentWorkflowService {
     private Map<String, Object> mapRfm(CustRfmSnapshot rfm) {
         Map<String, Object> map = new HashMap<>();
         if (rfm == null) return map;
-        map.put("rScore", rfm.getRScore());
-        map.put("fScore", rfm.getFScore());
-        map.put("mScore", rfm.getMScore());
-        map.put("customerLevel", rfm.getCustomerLevel());
         map.put("valueTier", rfm.getValueTier());
         map.put("lifecycleRisk", rfm.getLifecycleRisk());
         map.put("snapshotDate", rfm.getSnapshotDate() == null ? null : rfm.getSnapshotDate().toString());

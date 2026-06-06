@@ -1,0 +1,83 @@
+# Core analytical entities and grains.
+
+entities:
+  customer:
+    grain: one row per customer
+    primary_key: customer_id
+    description: CRM account or buyer record.
+    common_dimensions:
+      - lifecycle_stage
+      - segment
+      - acquisition_channel
+      - region
+      - created_at
+
+  order:
+    grain: one row per order
+    primary_key: order_id
+    foreign_keys:
+      - customer_id
+    description: Commercial transaction used for value, frequency, and recency analysis.
+    common_measures:
+      - order_amount
+      - item_count
+      - discount_amount
+      - paid_amount
+
+  interaction:
+    grain: one row per CRM interaction
+    primary_key: interaction_id
+    foreign_keys:
+      - customer_id
+    description: Sales, support, marketing, or AI-assisted customer touchpoint.
+    common_dimensions:
+      - channel
+      - interaction_type
+      - outcome
+      - created_at
+
+  rfm_score:
+    grain: one row per customer per scoring run
+    primary_key: rfm_score_id
+    foreign_keys:
+      - customer_id
+    description: Recency, frequency, monetary, and segment assignment snapshot.
+    common_dimensions:
+      - score_run_at
+      - rfm_segment
+    common_measures:
+      - recency_days
+      - frequency_count
+      - monetary_value
+      - r_score
+      - f_score
+      - m_score
+
+  agent_conversation:
+    grain: one row per AI assistant conversation or task run
+    primary_key: conversation_id
+    foreign_keys:
+      - customer_id
+      - user_id
+    description: AI Agent interaction used to evaluate adoption, success, and service quality.
+    common_dimensions:
+      - agent_type
+      - workflow_name
+      - status
+      - started_at
+    common_measures:
+      - latency_ms
+      - prompt_tokens
+      - completion_tokens
+      - tool_call_count
+
+  rag_document:
+    grain: one row per indexed document
+    primary_key: document_id
+    description: Knowledge item available to retrieval workflows.
+    common_dimensions:
+      - source_type
+      - collection
+      - indexed_at
+      - status
+

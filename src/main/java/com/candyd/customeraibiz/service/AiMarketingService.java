@@ -17,9 +17,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.client.RestTemplate;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -58,8 +62,10 @@ public class AiMarketingService {
 
 
     /**
-     * 🔥 智能体步骤 1：让 AI 提取用户的商品搜索关键词（检索）
+     * 已报废：旧版 Java 直连 Qwen 工单回复链路使用的关键词提取器。
+     * 当前工单主链路由 AiAgentWorkflowService 调用 FastAPI Agent。
      */
+    @Deprecated
     private String extractSearchKeywordFromAi(String userMessage) {
         try {
             StringBuilder sb = new StringBuilder();
@@ -85,9 +91,10 @@ public class AiMarketingService {
 
 
     /**
-     * 🔥 核心升级：生成回复草稿 (RAG 检索增强版)
-     * 结合了：客户RFM + 交互内容 + 【真实在售商品列表】
+     * 已报废：旧版 Java 直连 Qwen 工单回复链路，仅保留用于回溯。
+     * 当前工单主链路由 AiAgentWorkflowService 调用 FastAPI Agent。
      */
+    @Deprecated
     public void generateReplyDraft(CustInteraction interaction) {
         try {
             // 1. 查客户背景 (RFM + 姓名)
@@ -202,7 +209,16 @@ public class AiMarketingService {
             queryWrapper.eq("cust_id", targetCustId);
         }
 
-        List<CustRfmSnapshot> snapshots = snapshotMapper.selectList(queryWrapper);
+        List<CustRfmSnapshot> snapshots = new ArrayList<>(
+                snapshotMapper.selectList(queryWrapper.orderByDesc("snapshot_date", "id")).stream()
+                        .collect(Collectors.toMap(
+                                CustRfmSnapshot::getCustId,
+                                snapshot -> snapshot,
+                                (latest, ignored) -> latest,
+                                LinkedHashMap::new
+                        ))
+                        .values()
+        );
         log.info("开始生成客户价值诊断，共有 {} 位客户...", snapshots.size());
 
         for (CustRfmSnapshot customer : snapshots) {
@@ -210,6 +226,19 @@ public class AiMarketingService {
                 // 1. 准备基础数据
                 CustomerInfo basicInfo = customerInfoMapper.selectById(customer.getCustId());
                 String name = (basicInfo != null) ? basicInfo.getCustName() : "客户";
+                List<OrderInfo> completedOrders = findCompletedOrders(customer.getCustId());
+                int completedOrderCount = completedOrders.size();
+                BigDecimal totalAmount = completedOrders.stream()
+                        .map(OrderInfo::getOrderAmount)
+                        .reduce(BigDecimal.ZERO, BigDecimal::add);
+                LocalDateTime lastOrderDate = completedOrders.stream()
+                        .map(OrderInfo::getOrderDate)
+                        .max(LocalDateTime::compareTo)
+                        .orElse(null);
+                long daysSinceLastOrder = lastOrderDate == null
+                        ? 61
+                        : ChronoUnit.DAYS.between(lastOrderDate, LocalDateTime.now());
+                long recentNegativeCount = countRecentNegativeInteractions(customer.getCustId());
 
                 // 2. 查最近一次交互 (作为辅助参考，但不是核心)
                 CustInteraction lastInteraction = interactionMapper.selectOne(
@@ -226,13 +255,18 @@ public class AiMarketingService {
                 promptBuilder.append("你是一位资深的CRM数据分析师。请根据以下数据，为管理员生成一份【客户价值诊断简报】。\n");
                 promptBuilder.append("你的读者是内部工作人员，请保持客观、专业、简练的语气。\n\n");
 
-                // 核心数据：RFM
+                // 核心数据：价值等级与生命周期风险分开表达。
                 promptBuilder.append(String.format(
                         "【客户档案】：\n" +
                                 "- 姓名：%s (ID:%d)\n" +
-                                "- RFM评分：R(近度)%d分, F(频度)%d分, M(额度)%d分\n" +
-                                "- 当前系统判定等级：%s\n",
-                        name, customer.getCustId(), customer.getRScore(), customer.getFScore(), customer.getMScore(), customer.getCustomerLevel()
+                                "- 客户价值等级：%s\n" +
+                                "- 生命周期风险：%s\n" +
+                                "- 已完成订单数：%d\n" +
+                                "- 累计消费金额：%s 元\n" +
+                                "- 距最近一次购买：%d 天\n" +
+                                "- 最近 30 天负面交互数：%d\n",
+                        name, customer.getCustId(), customer.getValueTier(), customer.getLifecycleRisk(),
+                        completedOrderCount, totalAmount, daysSinceLastOrder, recentNegativeCount
                 ));
 
                 // 辅助数据：最近有没有闹事？
@@ -247,8 +281,10 @@ public class AiMarketingService {
                 promptBuilder.append("\n【任务要求】：\n");
                 promptBuilder.append("请必须分三个段落输出你的分析，段落之间用空行隔开。每段开头请严格使用以下指定的前缀：\n");
                 promptBuilder.append("【状态判断】：(分析该客户是活跃、沉睡还是有流失风险)\n");
-                promptBuilder.append("【价值评估】：(基于RFM分数分析其消费潜力)\n");
+                promptBuilder.append("【价值评估】：(基于客户价值等级分析其消费潜力)\n");
                 promptBuilder.append("【决策建议】：(管理员下一步的具体操作，如发券激活、电话安抚等)\n");
+                promptBuilder.append("判断口径：高价值表示已完成订单数不少于 5 单，或累计消费不少于 5000 元；沉睡表示超过 30 天未购买；流失风险表示超过 60 天未购买且最近 30 天有负面交互。\n");
+                promptBuilder.append("禁止使用旧口径：不要提及 RFM、R 值、F 值、M 值、R/F/M 分数或旧版混合客户等级。\n");
                 promptBuilder.append("格式底线：必须是纯文本！严禁使用任何加粗(**)、标题(#)、列表(-)等Markdown符号，只允许使用正常换行。\n");
 
                 promptBuilder.append("\n注意：不要生成发给客户的短信！是给管理员看的建议！");
@@ -278,6 +314,27 @@ public class AiMarketingService {
                 log.error("客户 {} 分析异常", customer.getCustId(), e);
             }
         }
+    }
+
+    private List<OrderInfo> findCompletedOrders(Long custId) {
+        return orderMapper.selectList(
+                new QueryWrapper<OrderInfo>()
+                        .eq("cust_id", custId)
+                        .eq("order_status", 1)
+        );
+    }
+
+    private long countRecentNegativeInteractions(Long custId) {
+        return interactionMapper.selectCount(
+                new QueryWrapper<CustInteraction>()
+                        .eq("cust_id", custId)
+                        .ge("create_time", LocalDateTime.now().minusDays(30))
+                        .and(wrapper -> wrapper
+                                .eq("interaction_type", "投诉")
+                                .or().like("content", "退款")
+                                .or().like("content", "不满")
+                                .or().like("content", "太差"))
+        );
     }
 
 
@@ -310,9 +367,11 @@ public class AiMarketingService {
                     new QueryWrapper<CustInteraction>().eq("status", 0)
             );
 
-            // C. 高价值流失风险客户 (R分数低，M分数高)
+            // C. 高价值且存在流失风险的客户
             Long churnRiskCount = snapshotMapper.selectCount(
-                    new QueryWrapper<CustRfmSnapshot>().le("r_score", 2).ge("m_score", 4)
+                    new QueryWrapper<CustRfmSnapshot>()
+                            .eq("value_tier", "high")
+                            .eq("lifecycle_risk", "churn_risk")
             );
 
             // 3. 构建 Prompt (这也是被找回的部分)

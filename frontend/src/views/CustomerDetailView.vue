@@ -71,7 +71,7 @@ async function fetchDetail() {
     // 赋值数据 (加了空值保护)
     const data = res.data || {}
     customer.value = data.info || {}
-    rfm.value = data.rfm || {rscore: 0, fscore: 0, mscore: 0, customerLevel: '普通客户'}
+    rfm.value = data.rfm || {valueTier: '', lifecycleRisk: ''}
     orders.value = data.orders || []
     interactions.value = data.interactions || []
 
@@ -131,13 +131,16 @@ function formatTime(t) {
   return t ? t.replace('T', ' ') : ''
 }
 
-// 辅助函数：根据等级返回颜色 class
-function getLevelClass(level) {
-  if (!level) return '';
-  if (level.includes('重要价值')) return 'tag-red';
-  if (level.includes('一般保持')) return 'tag-blue';
-  if (level.includes('流失风险')) return 'tag-grey';
-  return 'tag-green'; // 兜底颜色
+function valueTierLabel(value) {
+  return { high: '高价值客户', normal: '普通价值客户' }[value] || '待分析'
+}
+
+function lifecycleRiskLabel(value) {
+  return { active: '活跃', silent: '沉睡', churn_risk: '流失风险' }[value] || '待分析'
+}
+
+function lifecycleRiskClass(value) {
+  return { active: 'tag-green', silent: 'tag-orange', churn_risk: 'tag-red' }[value] || 'tag-grey'
 }
 </script>
 
@@ -164,9 +167,6 @@ function getLevelClass(level) {
           <div class="info-card">
             <div class="avatar">{{ customer.custName ? customer.custName[0] : 'U' }}</div>
             <h3>{{ customer.custName }}</h3>
-            <span class="level-tag" :class="getLevelClass(rfm.customerLevel)">
-              {{ rfm.customerLevel || '普通客户' }}
-            </span>
             <div class="detail-list">
               <p><strong>ID：</strong> {{ customer.custId }}</p>
               <p><strong>性别：</strong> {{ customer.gender }}</p>
@@ -175,22 +175,17 @@ function getLevelClass(level) {
             </div>
           </div>
 
-          <div class="rfm-card">
-            <h4>📊 RFM 评分</h4>
-            <div class="rfm-item">
-              <span>R (近度)</span>
-              <div class="progress"><div class="bar" :style="{width: (rfm.rscore*20)+'%'}"></div></div>
-              <span class="score">{{ rfm.rscore }}分</span>
+          <div class="strategy-card">
+            <h4>📊 客户运营策略</h4>
+            <div class="strategy-row">
+              <span class="strategy-label">价值等级</span>
+              <span class="strategy-tag tag-blue">{{ valueTierLabel(rfm.valueTier) }}</span>
             </div>
-            <div class="rfm-item">
-              <span>F (频度)</span>
-              <div class="progress"><div class="bar" :style="{width: (rfm.fscore*20)+'%'}"></div></div>
-              <span class="score">{{ rfm.fscore }}分</span>
-            </div>
-            <div class="rfm-item">
-              <span>M (额度)</span>
-              <div class="progress"><div class="bar" :style="{width: (rfm.mscore*20)+'%'}"></div></div>
-              <span class="score">{{ rfm.mscore }}分</span>
+            <div class="strategy-row">
+              <span class="strategy-label">生命周期风险</span>
+              <span class="strategy-tag" :class="lifecycleRiskClass(rfm.lifecycleRisk)">
+                {{ lifecycleRiskLabel(rfm.lifecycleRisk) }}
+              </span>
             </div>
           </div>
         </div>
@@ -358,7 +353,7 @@ function getLevelClass(level) {
 @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
 /* 卡片样式基础 */
-.info-card, .rfm-card, .section-card, .analysis-card {
+.info-card, .strategy-card, .section-card, .analysis-card {
   background: white; padding: 25px; border-radius: 8px;
   box-shadow: 0 2px 12px rgba(0,0,0,0.05);
 }
@@ -368,14 +363,11 @@ function getLevelClass(level) {
 .info-card h3 { text-align: center; margin-bottom: 10px; color: #333; }
 .detail-list { margin-top: 20px; text-align: left; font-size: 14px; line-height: 1.8; color: #555; }
 
-/* 左侧：RFM */
-.rfm-item { display: flex; align-items: center; margin-bottom: 15px; font-size: 13px; gap: 10px; }
-.progress { flex: 1; height: 8px; background: #eee; border-radius: 4px; overflow: hidden; }
-.bar { height: 100%; background: #409eff; border-radius: 4px; }
-.level-tag {
-  padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: bold;
-  display: block; width: fit-content; margin: 0 auto 15px; /* 居中 */
-}
+/* 左侧：当前客户策略 */
+.strategy-card h4 { margin-top: 0; color: #333; }
+.strategy-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 14px; font-size: 13px; }
+.strategy-label { color: #666; }
+.strategy-tag { padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: bold; }
 /* 状态标签通用样式 */
 .tag-red {
   background: #fef0f0;
@@ -397,6 +389,22 @@ function getLevelClass(level) {
   background: #f4f4f5;
   color: #909399;
   border: 1px solid #e9e9eb;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+.tag-green {
+  background: #f0f9eb;
+  color: #67c23a;
+  border: 1px solid #e1f3d8;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+.tag-orange {
+  background: #fdf6ec;
+  color: #e6a23c;
+  border: 1px solid #faecd8;
   padding: 4px 10px;
   border-radius: 4px;
   font-size: 12px;

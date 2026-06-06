@@ -12,11 +12,11 @@ public class CustRfmSnapshot {
     @TableId(type = IdType.AUTO)
     private Long id;
     private Long custId;
-    private Integer rScore;
-    private Integer fScore;
-    private Integer mScore;
-    private String customerLevel; // 最终等级，如：重要价值客户
-    private String valueTier; // 演示规则：high / normal
-    private String lifecycleRisk; // active / silent / churn_risk
+    private Integer rScore; // 已报废：仅兼容历史快照，不再写入或展示
+    private Integer fScore; // 已报废：仅兼容历史快照，不再写入或展示
+    private Integer mScore; // 已报废：仅兼容历史快照，不再写入或展示
+    private String customerLevel; // 已报废：旧版混合等级，仅兼容历史数据
+    private String valueTier; // 当前策略：high / normal
+    private String lifecycleRisk; // 当前策略：active / silent / churn_risk
     private LocalDate snapshotDate; // 快照日期
 }

@@ -108,9 +108,10 @@ def route_intent(content: str, override: str | None = None) -> tuple[str, str, s
         return intent, "", "rule_fallback"
 
 
-def _negative_history(history: list[dict[str, Any]]) -> bool:
-    keywords = ["投诉", "退款", "不满", "太差", "生气"]
-    return any(any(keyword in str(item.get("content") or "") for keyword in keywords) for item in history)
+# 已报废：生命周期风险统一由 Java 策略快照服务计算，Agent 不再用旧 RFM 分数二次推导。
+# def _negative_history(history: list[dict[str, Any]]) -> bool:
+#     keywords = ["投诉", "退款", "不满", "太差", "生气"]
+#     return any(any(keyword in str(item.get("content") or "") for keyword in keywords) for item in history)
 
 
 def build_customer_profile(payload: dict[str, Any]) -> dict[str, Any]:
@@ -118,19 +119,11 @@ def build_customer_profile(payload: dict[str, Any]) -> dict[str, Any]:
     rfm = payload.get("rfm") or {}
     orders = payload.get("orders") or []
     history = payload.get("history") or []
-    f_score = int(rfm.get("fScore") or rfm.get("f_score") or 0)
-    m_score = int(rfm.get("mScore") or rfm.get("m_score") or 0)
-    r_score = int(rfm.get("rScore") or rfm.get("r_score") or 0)
-    value_tier = rfm.get("valueTier") or rfm.get("value_tier")
-    lifecycle_risk = rfm.get("lifecycleRisk") or rfm.get("lifecycle_risk")
-    if not value_tier:
-        value_tier = "high" if f_score >= 4 or m_score >= 4 else "normal"
-    if not lifecycle_risk:
-        lifecycle_risk = "churn_risk" if r_score <= 2 and _negative_history(history) else ("silent" if r_score <= 2 else "active")
+    value_tier = rfm.get("valueTier") or rfm.get("value_tier") or "normal"
+    lifecycle_risk = rfm.get("lifecycleRisk") or rfm.get("lifecycle_risk") or "active"
     return {
         "custId": customer.get("custId") or customer.get("cust_id"),
         "name": customer.get("custName") or customer.get("name") or "客户",
-        "level": rfm.get("customerLevel") or rfm.get("customer_level") or "未分级",
         "value_tier": value_tier,
         "lifecycle_risk": lifecycle_risk,
         "recentOrderCount": len(orders),
@@ -218,19 +211,20 @@ def _product_evidence(payload: dict[str, Any], query: str) -> list[Evidence]:
     return sorted(scored, key=lambda item: item.score, reverse=True)
 
 
-def retrieve_handbook(query: str, intent: str, top_k: int = 3) -> tuple[list[Evidence], str]:
+def retrieve_handbook(query: str, intent: str, top_k: int = 3, expanded: bool = False) -> tuple[list[Evidence], str]:
     docs = load_handbook_chunks()
     semantic, backend = semantic_scores(query, docs)
     scored: list[Evidence] = []
     for doc in docs:
-        if intent != "general_service" and intent not in doc.get("intent_tags", []):
+        if not expanded and intent != "general_service" and intent not in doc.get("intent_tags", []):
             continue
         lexical = _score(query, f"{doc['title']} {doc['text']}")
         dense = semantic.get(doc["id"], 0.0)
         score = lexical + (0.15 if intent in doc.get("intent_tags", []) else 0.0)
         if dense:
             score = max(score, dense + 0.05)
-        if score >= 0.08:
+        threshold = 0.04 if expanded else 0.08
+        if score >= threshold:
             metadata = dict(doc)
             metadata["retrieval_mode"] = "qdrant" if dense else "keyword"
             scored.append(Evidence(
@@ -467,6 +461,7 @@ class WorkflowState(TypedDict, total=False):
     used_evidence_ids: list[str]
     rewrite_count: int
     retrieval_backend: str
+    retrieval_attempts: int
     trace: list[dict[str, Any]]
 
 
@@ -503,16 +498,20 @@ def _resolver_node(state: WorkflowState) -> WorkflowState:
 
 
 def _retrieval_node(state: WorkflowState) -> WorkflowState:
-    query = f"{state['intent']} {state['payload'].get('content') or ''}"
+    attempt = state.get("retrieval_attempts", 0)
+    expanded = attempt > 0
+    query = f"{state['intent']} {state.get('sub_intent') or ''} {state['payload'].get('content') or ''}"
     products = _product_evidence(state["payload"], query)
-    docs, backend = retrieve_handbook(query, state["intent"])
+    docs, backend = retrieve_handbook(query, state["intent"], top_k=6 if expanded else 3, expanded=expanded)
     policy_guidance = build_policy_guidance(docs)
+    backend_label = f"{backend}+expanded" if expanded else backend
     return {
         "products": products,
         "docs": docs,
         "policy_guidance": policy_guidance,
-        "retrieval_backend": backend,
-        "trace": _with_trace(state, "Handbook Retriever", f"{len(docs)} handbook chunks via {backend}"),
+        "retrieval_backend": backend_label,
+        "retrieval_attempts": attempt + 1,
+        "trace": _with_trace(state, "Handbook Retriever", f"{len(docs)} handbook chunks via {backend_label}; expanded={expanded}"),
     }
 
 
@@ -539,10 +538,20 @@ def _composer_node(state: WorkflowState) -> WorkflowState:
     }
 
 
+def _route_after_risk(state: WorkflowState) -> str:
+    if state.get("sufficiency") == "insufficient" and state.get("retrieval_attempts", 0) < 2:
+        return "expand_retrieval"
+    return "compose"
+
+
 def _run_nodes_sequentially(payload: dict[str, Any]) -> tuple[WorkflowState, str]:
     state: WorkflowState = {"payload": payload, "trace": []}
-    for node in [_intent_node, _profile_node, _resolver_node, _retrieval_node, _planner_node, _risk_node, _composer_node]:
+    for node in [_intent_node, _profile_node, _resolver_node, _retrieval_node, _planner_node, _risk_node]:
         state.update(node(state))
+    if _route_after_risk(state) == "expand_retrieval":
+        for node in [_retrieval_node, _planner_node, _risk_node]:
+            state.update(node(state))
+    state.update(_composer_node(state))
     return state, "sequential-fallback"
 
 
@@ -564,9 +573,18 @@ def _run_nodes(payload: dict[str, Any]) -> tuple[WorkflowState, str]:
     for name, node in nodes:
         builder.add_node(name, node)
     builder.add_edge(START, nodes[0][0])
-    for current, following in zip(nodes, nodes[1:]):
+    for current, following in zip(nodes[:5], nodes[1:5]):
         builder.add_edge(current[0], following[0])
-    builder.add_edge(nodes[-1][0], END)
+    builder.add_edge("reply_planner", "risk_checker")
+    builder.add_conditional_edges(
+        "risk_checker",
+        _route_after_risk,
+        {
+            "expand_retrieval": "handbook_retriever",
+            "compose": "final_composer",
+        },
+    )
+    builder.add_edge("final_composer", END)
     return builder.compile().invoke({"payload": payload, "trace": []}), "langgraph"
 
 

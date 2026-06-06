@@ -56,26 +56,27 @@ public class AiMarketingController {
                 new QueryWrapper<AiAdviceHistory>().orderByDesc("create_time")
         );
 
-        // 2. 遍历每一条记录，去查对应的客户等级，然后填进去
+        // 2. 遍历每一条记录，补充当前价值等级与生命周期风险。
         // (这是典型的 "内存组装" 方式，虽然不是性能最高的，但逻辑最清晰)
         for (AiAdviceHistory history : historyList) {
             Long custId = history.getCustId();
 
-            // 去 snapshot 表里查这个客户最新的等级
+            // 去 snapshot 表里查这个客户最新的策略快照
             // 注意：因为一个客户可能有多个日期的快照，我们取日期最新的那一条
             CustRfmSnapshot snapshot = snapshotMapper.selectOne(
                     new QueryWrapper<CustRfmSnapshot>()
                             .eq("cust_id", custId)
                             .orderByDesc("snapshot_date") // 按日期倒序
+                            .orderByDesc("id")
                             .last("LIMIT 1") // 只取第一条
             );
 
             if (snapshot != null) {
-                // 查到了！把等级塞进 history 对象里的临时字段
-                history.setCustomerLevel(snapshot.getCustomerLevel());
+                history.setValueTier(snapshot.getValueTier());
+                history.setLifecycleRisk(snapshot.getLifecycleRisk());
             } else {
-                // 没查到 (可能是新客户还没做RFM分析)
-                history.setCustomerLevel("未知等级");
+                history.setValueTier("");
+                history.setLifecycleRisk("");
             }
         }
 
